@@ -9,8 +9,8 @@ class MyMLP(tf.keras.Model):
         Parameters: 
             hidden_units (list) = list containing one element for each hidden layer and the values are the units of each layer 
             output_units (int) = the number of wanted output units
-            hidden_activation = the activation function for the hidden layers
-            output_activation = the activation fuction for the output layer
+            hidden_activation (function)= the activation function for the hidden layers
+            output_activation (function)= the activation fuction for the output layer
         """
 
         super(MyMLP, self).__init__()
@@ -19,6 +19,7 @@ class MyMLP(tf.keras.Model):
 
         self.optimizer = optimizer
         self.loss = loss
+        self.output_units = output_units
 
         self.metric = [tf.keras.metrics.Mean(name="loss"), tf.keras.metrics.CategoricalAccuracy(name="accuracy")]
 
@@ -76,3 +77,5 @@ class MyMLP(tf.keras.Model):
         self.metric[1].update_state(predictions, targets) # accuracy
 
         return{m.name : m.result() for m in self.metric}
+
+        

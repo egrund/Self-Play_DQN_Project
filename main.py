@@ -1,4 +1,3 @@
-import tensorflow as tf 
 from keras_gym_env import ConnectFourEnv
 
 from agent import DQNAgent

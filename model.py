@@ -16,11 +16,11 @@ class MyMLP(tf.keras.Model):
         self.dense_list = [ tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
-        self.metrics = [tf.keras.metrics.Mean(name="loss"), tf.keras.metrics.CategoricalAccuracy(name="accuracy")]
+        self.metric = [tf.keras.metrics.Mean(name="loss"), tf.keras.metrics.CategoricalAccuracy(name="accuracy")]
 
     def reset_metrics(self):
         """ resets all the metrices that are observed during training and testing """
-        for m in self.metrics:
+        for m in self.metric:
             m.reset_states()
 
     @tf.function
@@ -42,8 +42,8 @@ class MyMLP(tf.keras.Model):
             predictions = self(images)
             loss = self.compiled_loss(targets, predictions)
 
-            self.metrics[0].update_state(value=loss)
-            self.metrics[1].update_state(predictions, targets)
+            self.metric[0].update_state(value=loss)
+            self.metric[1].update_state(predictions, targets)
 
         # get the gradients
         gradients = tape.gradient(loss,self.trainable_variables)
@@ -51,7 +51,7 @@ class MyMLP(tf.keras.Model):
         # apply the gradient
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        return{m.name : m.result() for m in self.metrics}
+        return{m.name : m.result() for m in self.metric}
 
     @tf.function
     def test_step(self,data):
@@ -68,7 +68,7 @@ class MyMLP(tf.keras.Model):
         predictions = self(img,training=False)
         loss = self.loss_function(targets, tf.squeeze(predictions))
 
-        self.metrics[0].update_state(values = loss) # loss
-        self.metrics[1].update_state(predictions, targets) # accuracy
+        self.metric[0].update_state(values = loss) # loss
+        self.metric[1].update_state(predictions, targets) # accuracy
 
-        return{m.name : m.result() for m in self.metrics}
+        return{m.name : m.result() for m in self.metric}

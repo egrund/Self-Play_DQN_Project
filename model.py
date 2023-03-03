@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-class MyModel(tf.keras.Model):
+class MyMLP(tf.keras.Model):
     """ an ANN created to train on the mnist dataset """
     
-    def __init__(self,hidden_units : list,output_units : int = 10,hidden_activation = tf.nn.relu):
+    def __init__(self,hidden_units : list,output_units : int = 10,hidden_activation = tf.nn.relu,output_activation = tf.nn.softmax):
         """ Constructor 
         
         Parameters: 
@@ -12,9 +12,9 @@ class MyModel(tf.keras.Model):
             hidden_activation = the activation function for the hidden layers
         """
 
-        super(MyModel, self).__init__()
+        super(MyMLP, self).__init__()
         self.dense_list = [ tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
-        self.out = tf.keras.layers.Dense(output_units, activation=tf.nn.softmax)
+        self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
         self.metrics = [tf.keras.metrics.Mean(name="loss"), tf.keras.metrics.CategoricalAccuracy(name="accuracy")]
 
@@ -39,17 +39,17 @@ class MyModel(tf.keras.Model):
 
         with tf.GradientTape() as tape: 
 
-            predictions = model(images)
-            loss = loss_function(targets, predictions)
+            predictions = self(images)
+            loss = self.compiled_loss(targets, predictions)
 
             self.metrics[0].update_state(value=loss)
             self.metrics[1].update_state(predictions, targets)
 
         # get the gradients
-        gradients = tape.gradient(loss,model.trainable_variables)
+        gradients = tape.gradient(loss,self.trainable_variables)
 
         # apply the gradient
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         return{m.name : m.result() for m in self.metrics}
 

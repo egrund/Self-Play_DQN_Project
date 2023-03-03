@@ -27,6 +27,8 @@ class DQNAgent:
 
             # new sampling + add to buffer
 
+            #buffer.extend()
+
             # write summary
 
             print("Iteration: ", i)
@@ -37,7 +39,7 @@ class DQNAgent:
             pass
 
             # sample minibatch
-            minibatch = self.buffer.sample_minibatch()
+            # minibatch = self.buffer.sample_minibatch()
 
             # train model
 

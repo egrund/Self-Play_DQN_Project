@@ -6,41 +6,25 @@ import random as rand
 class DQNAgent:
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, envs, buffer):
+    def __init__(self, env, buffer, reward_function = lambda d,r: r):
 
         # create an initialize model and target_model
-        self.model = MyMLP(hidden_units = [128,64,32], output_units = len(envs[0].available_actions))
-        self.target_model = MyMLP(hidden_units = [128,64,32], output_units = len(envs[0].available_actions))
-        #self.model()
-        #self.target_model()
-        self.dqn_target.set_weights(np.array(self.dqn.get_weights(),dtype = object))
+        self.model = MyMLP(hidden_units = [128,64,32], output_units = len(env.available_actions))
+        self.target_model = MyMLP(hidden_units = [128,64,32], output_units = len(env.available_actions))
+        obs = env.reset()
+        self.model(obs)
+        self.target_model(obs)
+        self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))
 
-        self.envs = envs
+        self.env = env
         self.buffer = buffer
-
-    def train(self,iterations : int, path_save_weights : str, path_save_logs : str):
-        """ """
-
-        for i in range(iterations):
-
-            # epsilon decay
-
-            # train the dqn + new sampels
-            self.train_episode(i)
-
-            # new sampling + add to buffer
-
-            #buffer.extend()
-
-            # write summary
-
-            print("Iteration: ", i)
+        self.reward_function = reward_function
 
     def train_inner_iteration(self,i):
         """ """
 
-        for j in range(inner_iterations): # TODO
-            pass
+        #for j in range(inner_iterations): # TODO
+        pass
 
             # sample random minibatch of transitions
             # minibatch = self.buffer.sample_minibatch()
@@ -54,12 +38,16 @@ class DQNAgent:
 
         # logs
 
-def select_action_epsilon_greedy(self,epsilon, observations):
-        """ selects an action using the model and an epsilon greedy policy """
+    def select_action_epsilon_greedy(self,epsilon, observations):
+            """ selects an action using the model and an epsilon greedy policy """
 
-        random_action = [rand.randint(0,100)<epsilon*100 for _ in range(len(self.envs))]
-        if random_action:
-            action = rand.randint(0,self.model.output_units)
-        else:
-            action = tf.argmax(self.model(observation,training = False), axis = -1).numpy()
-        return action
+            random_action = [rand.randint(0,100)<epsilon*100 for _ in range(len(observations))]
+            if random_action:
+                action = rand.randint(0,self.model.output_units)
+            else:
+                action = self.select_action(observations)
+            return action
+
+    def select_action(self,observations):
+        """ selects the currently best action using the model """
+        return tf.argmax(self.model(observations,training = False), axis = -1).numpy()

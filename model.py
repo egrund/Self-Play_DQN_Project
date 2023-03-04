@@ -31,7 +31,7 @@ class MyMLP(tf.keras.Model):
     @tf.function
     def call(self, inputs):
         """ forward propagation of the ANN """
-        x = inputs
+        x = tf.keras.layers.Flatten()(inputs)
         for layer in self.dense_list:
             x = layer(x)
         x = self.out(x)

@@ -8,7 +8,7 @@ class Sampler:
     Attributes: 
         envs (list): List of all the ConnectFour environments to sample from
         batch (int): how many environments to sample from at the same time
-        agnets (list): list of two agents to use for the sampling procedure
+        agents (list): list of two agents to use for the sampling procedure
     """
 
     def __init__(self,batch,agents):
@@ -39,7 +39,7 @@ class Sampler:
             # add first observation to new results
             results = [np.concatenate((observations[i],actions[i],results[i][:][1],results[i][:][0],results[i][:][0]),1) for i in range(2)] # state, action, reward, new state, done
 
-            [sarsd[i].extend(results[i]) for i in range(2)]
+            [sarsd[i].extend(results[i]) for i in range(2)] 
 
             # get observations for next turn, and remove everything that is done already
             observations = [np.extract( not results[i][:][2], results[i][:][0]) for i in range(2)]

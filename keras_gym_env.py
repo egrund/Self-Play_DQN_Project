@@ -218,7 +218,8 @@ class ConnectFourEnv(Env):
         hrule = '+---' * self.num_cols + '+\n'
         board = "  "
         board += "   ".join(
-            symbol.get(-(a == self._prev_action) * self._players[1], " ")
+            # symbol.get(-(a == self._prev_action) * self._players[1], " ")
+            symbol.get( not (a == self._prev_action) * self._players[1], " ")
             for a in range(self.num_cols))
         board += "  \n"
         board += hrule

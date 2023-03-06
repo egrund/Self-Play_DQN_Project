@@ -39,21 +39,30 @@ class DQNAgent:
         # logs
 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions):
-        """ selects an action using the model and an epsilon greedy policy """
+        """ 
+        selects an action using the model and an epsilon greedy policy 
+        
+        Parameters:
+            epsilon (float):
+            observations (array): (batch, 7, 7) using FourConnect
+            available_actions (list): containing all the available actions for each batch observation
+        
+        returns: 
+            the chosen action for each batch element
+        """
 
         random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
-        print("where: ", random_action_where)
-        random_actions = [np.random.Random_State.choice(a,size=(observations.shape[0])) for a in available_actions]
-        print("random action: ", random_actions)
-        best_actions = self.select_action(observations,available_actions)
-        print("best actions: ", best_actions)
+        random_actions = [np.random.choice(a) for a in available_actions]
+        best_actions = self.select_action(observations,available_actions).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
+    @tf.function
     def select_action(self,observations, available_actions):
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)
         # remove all unavailable actions
         probs = tf.gather(probs,available_actions, axis=1, batch_dims = 1)
         # calculate best action
-        inx = tf.argmax(probs, axis = -1).numpy()
-        return tf.gather(available_actions,inx,axis = 1, batch_dims = 1).numpy()
+        inx = tf.argmax(probs, axis = -1)
+        # get best action for each batch element
+        return tf.gather(available_actions,inx,axis = 1, batch_dims = 1)

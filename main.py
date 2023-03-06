@@ -22,9 +22,6 @@ adapting_agent = DQNAgent(env, adapting_buffer, reward_function = reward_functio
 
 # create Sampler
 sampler = Sampler(BATCH_SIZE,[best_agent,adapting_agent])
-#sampler.fill_buffers(EPSILON)
+sampler.fill_buffers(EPSILON)
 
-states = sampler.sample_from_game(EPSILON)
-
-for s in states:
-    print(s)
+#states = sampler.sample_from_game(EPSILON)

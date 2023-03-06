@@ -34,14 +34,13 @@ class Sampler:
         observations = [np.array([env.reset() for env in which_agent ]) for which_agent in current_envs]
 
         for e in range(10000):
-            print("E: ", e)
-            print("Shapes: ", shapes)
+            #print("E: ", e)
+            #print("Shapes: ", shapes)
 
             # get all the actions from the agents
             #print("first observation ", observations)
             available_actions = [np.array([current_envs[i][j].available_actions for j in range(shapes[i])]) for i in range(2)]
             actions = [self.agents[i].select_action_epsilon_greedy(epsilon, observations[i],available_actions[i])if shapes[i] != 0 else [] for i in range(2)]
-            print("actions ", actions)
 
             # do the step in every env
             results = [[current_envs[i][j].step(actions[i][j]) for j in range(shapes[i])] if shapes[i] != 0 else [] for i in range(2)]
@@ -66,7 +65,9 @@ class Sampler:
 
         # save data in buffer
         [self.agents[i].buffer.extend(sarsd[i]) for i in range(2)]
-        return [self.env.render()]
+
+        # render for debugging
+        # [e.render() for e in self.envs]
 
     def fill_buffers(self,epsilon):
         """ 

@@ -7,7 +7,7 @@ from sampler import Sampler
 from training import train
 
 # Hyperparameter
-BATCH_SIZE = 16
+BATCH_SIZE = 4
 reward_function_adapting_agent = lambda d,r: np.where(r==0,[1,0]) if d else r
 EPSILON = 0.01 #TODO
 
@@ -16,8 +16,8 @@ env = ConnectFourEnv()
 actions = env.available_actions
 
 # create buffer
-best_buffer = Buffer(100)
-adapting_buffer = Buffer(100)
+best_buffer = Buffer(100000,1000)
+adapting_buffer = Buffer(100000,1000)
 
 # create agent
 best_agent = DQNAgent(env,best_buffer)

@@ -5,8 +5,10 @@ class Buffer:
     Implemens a replay buffer for our DQNAgent class. 
     """
 
-    def __init__(self, capacity):
+    def __init__(self, capacity, min_size):
         self.capacity = capacity
+        self.min_size = min_size
+        self.current_size = 0
         self.sarsd_list = []
         self.idx = 0
 
@@ -15,11 +17,8 @@ class Buffer:
         """
         Prameters:
         ______________
-        state(array): current state
-        action(int): which action will be performed
-        reward(float): reward is calculated according to the win conditon and agent
-        new_state(array): the next state
-        done(bool): True if game is over 
+        sarsd (list): list of new data samples to add to the buffer. each sample being in the order 
+            state, action, reward, new_state, done
         ______________
         
         
@@ -29,18 +28,15 @@ class Buffer:
         ______________
         """
         #extend till the capacity is reached
-        if(len(sarsd_list) < capacity):
-            self.sarsd_list.extend(sarsd)
-            
-        else:
-            self.idx = rnd.randint(0, capacity - 1) #random overwrite
-            self.sarsd_list[self.idx][0] = sarsd[0] #state
-            self.sarsd_list[self.idx][1] = sarsd[1] #action
-            self.sarsd_list[self.idx][2] = sarsd[2] #reward
-            self.sarsd_list[self.idx][3] = sarsd[3] #next_state
-            self.sarsd_list[self.idx][4] = sarsd[4] #done
-        
-        
+        for sample in sarsd:
+            if(self.current_size < self.capacity):
+                self.sarsd_list.append(sample)
+                self.current_size += 1
+                
+            else:
+                #randomly overwrite old data
+                self.idx = rnd.randint(0, self.capacity - 1)
+                self.sarsd_list[self.idx] = sample
 
     def sample_minibatch(self, batch_size):
         """ samples a random minibatch from the buffer """

@@ -15,7 +15,6 @@ class DQNAgent:
         self.model(obs)
         self.target_model(obs)
         self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))
-        self.model.model_target = self.target_model
         self.inner_iterations = inner_iterations
         self.polyak_update = polyak_update
         env.close()
@@ -33,11 +32,13 @@ class DQNAgent:
             # sample random minibatch of transitions
             minibatch = self.buffer.sample_minibatch(self.batch)  #Out:[state, action, reward, next_state, done]
 
-            # train model  
-            print(minibatch[0])
-            #training_data = 
+            state = tf.convert_to_tensor([sample[0] for sample in minibatch],dtype = tf.float32)
+            actions = tf.convert_to_tensor([sample[1] for sample in minibatch],dtype = tf.float32)
+            reward = tf.convert_to_tensor([sample[2] for sample in minibatch],dtype = tf.float32)
+            new_state = tf.convert_to_tensor([sample[3] for sample in minibatch],dtype = tf.float32)
+            done = tf.convert_to_tensor([sample[4] for sample in minibatch],dtype = tf.float32)
             
-            #loss = self.model.train_step(s,a,r,s_new,done, self.optimizer, self.dqn_target)
+            loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 
 
             # if prioritized experience replay, then here
@@ -52,7 +53,8 @@ class DQNAgent:
 
 
         # polyak averaging
-        self.target_model.set_weights((1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
+        self.target_model.set_weights(
+            (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
 
         # reset all metrics

@@ -48,4 +48,4 @@ agents = [best_agent, adapting_agent]
 train(agents, BATCH_SIZE, iterations, train_writer, test_writer, epsilon= EPSILON, epsilon_decay = 0.9)
 
 
-#states = sampler.sample_from_game(EPSILON)
+print("done")

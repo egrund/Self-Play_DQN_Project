@@ -20,7 +20,6 @@ class MyMLP(tf.keras.Model):
         self.optimizer = optimizer
         self.loss = loss
         self.output_units = output_units
-        self.model_target = None
 
         self.metric = [tf.keras.metrics.Mean(name="loss")]
 
@@ -39,28 +38,25 @@ class MyMLP(tf.keras.Model):
         return x
 
     @tf.function
-    def train_step(self, inputs):
+    def train_step(self, inputs, target_model):
         """ 
         one train step of the model
 
         inputs (list): state, action, reward, new_state, done (axis 0 is the batch dim)
         """
 
-        if not self.model_target:
-            raise Exception("This model does not have a target model.")
-
         s,a,r,s_new, done = inputs
 
         with tf.GradientTape() as tape: 
             
             # calculate the target Q value
-            Qmax = tf.math.reduce_max(self.model_target(s_new),axis=1)
+            Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
             # calculate q value of this state action pair
             Qsa = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
 
             losses = self.loss(Qsa, r + (tf.constant(0.99)*Qmax)*(1-done))
 
-            self.metric[0].update_state(value=losses)
+            self.metric[0].update_state(losses)
 
         # get the gradients
         gradients = tape.gradient(losses,self.trainable_variables)

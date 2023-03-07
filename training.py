@@ -10,8 +10,8 @@ def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, EPSIL
         EPSILON = EPSILON * EPSILON_DECAY
 
         # train the dqn + new samples
-        if len(agents)==len(train_summary_writer):
-            [agent.train_inner_iteration(self, train_summary_writer[j], i) for j, agent in enumerate(agents)]
+        if len(agents)==len(train_writer):
+            [agent.train_inner_iteration(train_writer[j], i) for j, agent in enumerate(agents)]
         else:
             raise IndexError("You need the same amount of summary writers and agents.")
 

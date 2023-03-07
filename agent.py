@@ -22,6 +22,7 @@ class DQNAgent:
 
         # self.env = env
         self.buffer = buffer
+        self.batch = batch
         self.reward_function = reward_function
 
     def train_inner_iteration(self, summary_writer, i):
@@ -35,23 +36,26 @@ class DQNAgent:
             print(minibatch[0])
             #training_data = 
             
-            #loss = self.dqn.step(s,a,r,s_new,done, self.optimizer, self.dqn_target)
+            #loss = self.model.train_step(s,a,r,s_new,done, self.optimizer, self.dqn_target)
 
 
             # if prioritized experience replay, then here
+
+            # logs
+                #if train_writer:
+                    #with train_writer.as_default():
+                        #tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
+                #if test_writer:
+                    #with test_writer.as_default():
+                        #tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
 
 
         # polyak averaging
         self.target_model.set_weights((1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
 
-        # logs
-        if train_summary_writer:
-            with train_summary_writer.as_default():
-                tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
-        if test_summary_writer:
-            with test_summary_writer.as_default():
-                tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
+        # reset all metrics
+        self.model.reset_metrics()
                 
                 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions):
@@ -69,7 +73,7 @@ class DQNAgent:
 
         random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
         random_actions = [np.random.choice(a) for a in available_actions]
-        best_actions = self.select_action(observations,available_actions).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
     @tf.function
@@ -77,6 +81,7 @@ class DQNAgent:
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)
         # remove all unavailable actions
+        print("AV ", available_actions)
         probs = tf.gather(probs,available_actions, axis=1, batch_dims = 1)
         # calculate best action
         inx = tf.argmax(probs, axis = -1)

@@ -27,7 +27,7 @@ test_writer = [best_test_writer, adapting_test_writer]
 
 # Hyperparameter
 iterations = 12
-BATCH_SIZE = 4
+BATCH_SIZE = 6
 reward_function_adapting_agent = lambda d,r: np.where(r==0,[1,0]) if d else r
 EPSILON = 0.01 #TODO
 
@@ -37,8 +37,8 @@ adapting_buffer = Buffer(100000,1000)
 
 # create agent
 env = ConnectFourEnv()
-best_agent = DQNAgent(env,best_buffer, batch = 4)
-adapting_agent = DQNAgent(env, adapting_buffer, batch = 4, reward_function = reward_function_adapting_agent)
+best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE)
+adapting_agent = DQNAgent(env, adapting_buffer, batch = BATCH_SIZE, reward_function = reward_function_adapting_agent)
 agents = [best_agent, adapting_agent]
 
 train(agents, BATCH_SIZE, iterations, train_writer, test_writer, EPSILON = 1, EPSILON_DECAY = 0.9)

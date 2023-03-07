@@ -16,7 +16,7 @@ def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, epsil
             raise IndexError("You need the same amount of summary writers and agents.")
 
         # new sampling + add to buffer
-        sampler.sample_from_game(epsilon)
+        av_rewards = sampler.sample_from_game(epsilon) # TODO log average rewards
 
         # write summary
         # create directory for logs

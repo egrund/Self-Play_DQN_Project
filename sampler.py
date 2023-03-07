@@ -71,6 +71,9 @@ class Sampler:
         # render for debugging
         # [e.render() for e in self.envs]
 
+        # return averade reward for both agents
+        return tuple([np.mean(sarsd[i][:][2]) for i in range(2)])
+
     def fill_buffers(self,epsilon):
         """ 
         fills the empty buffer with min elements sampling several times from the environemnts
@@ -80,4 +83,4 @@ class Sampler:
         """
         
         while(any([self.agents[i].buffer.current_size < self.agents[i].buffer.min_size for i in range(2)])):
-            self.sample_from_game(epsilon)
+            _ = self.sample_from_game(epsilon)

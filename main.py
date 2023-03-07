@@ -6,6 +6,16 @@ from buffer import Buffer
 from sampler import Sampler
 from training import train
 
+#Subfolder for Logs
+config_name = "default"
+
+#createsummary writer for vusalization in tensorboard    
+time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+train_file_path = f"logs/{config_name}/{time_string}/train"
+test_file_path = f"logs/{config_name}/{time_string}/test"
+train_summary_writer = tf.summary.create_file_writer(train_file_path)
+test_summary_writer = tf.summary.create_file_writer(test_file_path)
+
 # Hyperparameter
 BATCH_SIZE = 4
 reward_function_adapting_agent = lambda d,r: np.where(r==0,[1,0]) if d else r
@@ -19,9 +29,8 @@ adapting_buffer = Buffer(100000,1000)
 env = ConnectFourEnv()
 best_agent = DQNAgent(env,best_buffer)
 adapting_agent = DQNAgent(env, adapting_buffer, reward_function = reward_function_adapting_agent)
+agents = [best_agent, adapting_agent]
 
-# create Sampler
-sampler = Sampler(BATCH_SIZE,[best_agent,adapting_agent])
-sampler.fill_buffers(EPSILON)
+
 
 #states = sampler.sample_from_game(EPSILON)

@@ -1,4 +1,4 @@
-def train(self, agents, iterations : int, summary_writer, EPSILON = 1, EPSILON_DECAY = 0.9):
+def train(self, agents, iterations : int, train_writer, test_writer, EPSILON = 1, EPSILON_DECAY = 0.9):
         """ """
 
     

@@ -1,12 +1,9 @@
-def train(self, agents, iterations : int, train_writer, test_writer, EPSILON = 1, EPSILON_DECAY = 0.9):
-        """ """
+from sampler import Sampler
 
-    
-    
-    # create Sampler
-    sampler = Sampler(BATCH_SIZE, agents)
+def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, EPSILON = 0.01, EPSILON_DECAY = 0.9): # 
+    # create Sampler 
+    sampler = Sampler(BATCH_SIZE,agents)
     sampler.fill_buffers(EPSILON)
-        
     for i in range(iterations):
         
         # epsilon decay
@@ -19,7 +16,7 @@ def train(self, agents, iterations : int, train_writer, test_writer, EPSILON = 1
             raise IndexError("You need the same amount of summary writers and agents.")
 
         # new sampling + add to buffer
-        sampler.sample_from_game(epsilon)
+        sampler.sample_from_game(EPSILON)
 
         # write summary
         # create directory for logs

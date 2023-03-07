@@ -40,7 +40,9 @@ class Sampler:
             # get all the actions from the agents
             #print("first observation ", observations)
             available_actions = [[current_envs[i][j].available_actions for j in range(shapes[i])] for i in range(2)]
-            actions = [self.agents[i].select_action_epsilon_greedy(epsilon, observations[i],available_actions[i])if shapes[i] != 0 else [] for i in range(2)]
+            available_actions_bool = [[current_envs[i][j].available_actions_mask for j in range(shapes[i])] for i in range(2)]
+
+            actions = [self.agents[i].select_action_epsilon_greedy(epsilon, observations[i],available_actions[i], available_actions_bool[i])if shapes[i] != 0 else [] for i in range(2)]
 
             # do the step in every env
             results = [[current_envs[i][j].step(actions[i][j]) for j in range(shapes[i])] if shapes[i] != 0 else [] for i in range(2)]

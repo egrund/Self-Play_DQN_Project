@@ -1,13 +1,13 @@
 from sampler import Sampler
 
-def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, EPSILON = 0.01, EPSILON_DECAY = 0.9): # 
+def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9): # 
     # create Sampler 
     sampler = Sampler(BATCH_SIZE,agents)
-    sampler.fill_buffers(EPSILON)
+    sampler.fill_buffers(epsilon)
     for i in range(iterations):
         
         # epsilon decay
-        EPSILON = EPSILON * EPSILON_DECAY
+        epsilon = epsilon * epsilon_decay
 
         # train the dqn + new samples
         if len(agents)==len(train_writer):
@@ -16,7 +16,7 @@ def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, EPSIL
             raise IndexError("You need the same amount of summary writers and agents.")
 
         # new sampling + add to buffer
-        sampler.sample_from_game(EPSILON)
+        sampler.sample_from_game(epsilon)
 
         # write summary
         # create directory for logs
@@ -26,10 +26,4 @@ def train(agents, BATCH_SIZE, iterations : int, train_writer, test_writer, EPSIL
         #    for metric in model.metrics:
         #        tf.summary.scalar(f"{metric.name}", metric.result(), step=epoch)
 
-        # reset all metrics
-        model.reset_metrics()
         print("\n")
-
-        # save model
-        if iterations%10 == 0:
-            model.save_weights(f"model/{config_name}/{epoch}")

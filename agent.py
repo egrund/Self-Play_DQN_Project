@@ -6,11 +6,11 @@ import random as rnd
 class DQNAgent:
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, reward_function = lambda d,r: r, polyak_update = 0.9, inner_iterations = 10):
+    def __init__(self, env, buffer, batch : int, model_path, reward_function = lambda d,r: r, polyak_update = 0.9, inner_iterations = 10):
 
         # create an initialize model and target_model
-        self.model = MyMLP(hidden_units = [128,64,32], output_units = len(env.available_actions))
-        self.target_model = MyMLP(hidden_units = [128,64,32], output_units = len(env.available_actions))
+        self.model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
+        self.target_model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
         obs = tf.expand_dims(env.reset(),axis=0)
         self.model(obs)
         self.target_model(obs)
@@ -21,6 +21,7 @@ class DQNAgent:
         env.close()
 
         # self.env = env
+        self.model_path = model_path
         self.buffer = buffer
         self.batch = batch
         self.reward_function = reward_function
@@ -56,9 +57,12 @@ class DQNAgent:
 
         # reset all metrics
         self.model.reset_metrics()
+
+        # save model
+        self.model.save_weights(self.model_path + f"/{i}")
                 
                 
-    def select_action_epsilon_greedy(self,epsilon, observations, available_actions):
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
         """ 
         selects an action using the model and an epsilon greedy policy 
         
@@ -66,6 +70,7 @@ class DQNAgent:
             epsilon (float):
             observations (array): (batch, 7, 7) using FourConnect
             available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
         
         returns: 
             the chosen action for each batch element
@@ -73,17 +78,14 @@ class DQNAgent:
 
         random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
         random_actions = [np.random.choice(a) for a in available_actions]
-        best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions_bool).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
     @tf.function
-    def select_action(self,observations, available_actions):
+    def select_action(self, observations, available_actions_bool):
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)
         # remove all unavailable actions
-        print("AV ", available_actions)
-        probs = tf.gather(probs,available_actions, axis=1, batch_dims = 1)
+        probs = tf.where(available_actions_bool,probs,-1)
         # calculate best action
-        inx = tf.argmax(probs, axis = -1)
-        # get best action for each batch element
-        return tf.gather(available_actions,inx,axis = 1, batch_dims = 1)
+        return tf.argmax(probs, axis = -1)

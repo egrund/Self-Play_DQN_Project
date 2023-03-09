@@ -24,19 +24,20 @@ class DQNAgent:
         self.buffer = buffer
         self.batch = batch
         self.reward_function = reward_function
-
+        
     def train_inner_iteration(self, summary_writer, i):
         """ """
         for j in range(self.inner_iterations):
 
             # sample random minibatch of transitions
             minibatch = self.buffer.sample_minibatch(self.batch)  #Out:[state, action, reward, next_state, done]
-
+            
             state = tf.convert_to_tensor([sample[0] for sample in minibatch],dtype = tf.float32)
             actions = tf.convert_to_tensor([sample[1] for sample in minibatch],dtype = tf.float32)
-            reward = tf.convert_to_tensor([sample[2] for sample in minibatch],dtype = tf.float32)
+            
             new_state = tf.convert_to_tensor([sample[3] for sample in minibatch],dtype = tf.float32)
             done = tf.convert_to_tensor([sample[4] for sample in minibatch],dtype = tf.float32)
+            reward = self.reward_function(tf.cast(done, dtype = tf.bool), tf.convert_to_tensor([sample[2] for sample in minibatch],dtype = tf.float32))
             
             loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 

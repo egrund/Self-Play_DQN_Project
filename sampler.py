@@ -72,7 +72,8 @@ class Sampler:
         # [e.render() for e in self.envs]
 
         # return averade reward for both agents
-        return tuple([np.mean(sarsd[i][:][2]) for i in range(2)])
+        #print(tuple([np.mean([sarsd[i][j][2] for j in range(len(sarsd[i]))], dtype=object) for i in range(2)]))
+        return tuple([np.mean([sarsd[i][j][2] for j in range(len(sarsd[i]))], dtype=object) for i in range(2)])
 
     def fill_buffers(self,epsilon):
         """ 

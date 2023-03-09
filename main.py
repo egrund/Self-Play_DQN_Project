@@ -32,7 +32,7 @@ model_path_adapting = f"model/{config_name}/{time_string}/adapting"
 # Hyperparameter
 iterations = 12
 BATCH_SIZE = 6
-reward_function_adapting_agent = lambda d,r: np.where(r==0,[1,0]) if d else r
+reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
 EPSILON = 1 #TODO
 
 # create buffer

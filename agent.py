@@ -45,12 +45,9 @@ class DQNAgent:
             # if prioritized experience replay, then here
 
             # logs
-                #if train_writer:
-                    #with train_writer.as_default():
-                        #tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
-                #if test_writer:
-                    #with test_writer.as_default():
-                        #tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
+            if summary_writer:
+                with summary_writer.as_default():
+                    tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
 
 
         # polyak averaging

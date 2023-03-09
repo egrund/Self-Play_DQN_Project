@@ -17,7 +17,7 @@ class Sampler:
         self.envs = [ConnectFourEnv() for _ in range(batch)]
         self.batch = batch
         self.agents = agents
-
+  
     def sample_from_game(self,epsilon):
         """ 
         samples from every environment in self.envs until it is done or reaches 10000 steps. 

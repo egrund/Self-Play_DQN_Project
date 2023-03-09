@@ -2,13 +2,14 @@ from sampler import Sampler
 import tensorflow as tf
 import numpy as np
 import time
-
+import tqdm
+  
 def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9): # 
     """ """
     # create Sampler 
     sampler = Sampler(BATCH_SIZE,[agent,agent]) # TODO change functions for just one agent
     sampler.fill_buffers(epsilon)
-    for i in range(iterations):
+    for i in tqdm.tqdm(range(iterations)):
         
         start = time.time()
         # epsilon decay
@@ -29,7 +30,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
             tf.summary.scalar(f"time per iteration", end-start, step=i)
 
-        print("\n")
+        #print("\n")
 
 def train_adapting(agents, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9): # 
     # create Sampler 
@@ -56,4 +57,4 @@ def train_adapting(agents, BATCH_SIZE, iterations : int, train_writer, epsilon =
         #    for metric in model.metrics:
         #        tf.summary.scalar(f"{metric.name}", metric.result(), step=epoch)
 
-        print("\n")
+        #print("\n")

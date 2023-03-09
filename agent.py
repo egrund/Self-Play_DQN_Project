@@ -25,6 +25,7 @@ class DQNAgent:
         self.batch = batch
         self.reward_function = reward_function
         
+      
     def train_inner_iteration(self, summary_writer, i):
         """ """
         for j in range(self.inner_iterations):
@@ -41,13 +42,12 @@ class DQNAgent:
             
             loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 
-
             # if prioritized experience replay, then here
 
             # logs
             if summary_writer:
                 with summary_writer.as_default():
-                    tf.summary.scalar(m.name, loss, step=j+i*self.inner_iterations)
+                    tf.summary.scalar('loss', loss.get('loss'), step=j+i*self.inner_iterations)
 
 
         # polyak averaging
@@ -81,7 +81,7 @@ class DQNAgent:
         best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions_bool).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
-    @tf.function
+    #@tf.function
     def select_action(self, observations, available_actions_bool):
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)

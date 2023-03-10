@@ -48,19 +48,14 @@ best_buffer = Buffer(100000,1000)
 # create agent
 env = ConnectFourEnv()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
-
-best_agent.load_models(I)
-
 random_agent = RandomAgent()
 sampler = Sampler(AV,[best_agent,random_agent])
 
-rewards, _ = sampler.sample_from_game(0.0,save = False)
-print(f"Best Agent {I} average reward: {rewards}")
-
-
-
-    
-
-
+for i in range(49,1000,50):
+    best_agent.load_models(i)
+    rewards = sampler.sample_from_game(0.0,save = False)
+    print(f"Best Agent {I} average reward: {rewards[0]}")
+    print(f"Random Agent average reward: {rewards[1]}")
+    print(f"Ratio: {rewards[0]- rewards[1]}\n")
 
 print("done")

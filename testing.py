@@ -7,55 +7,68 @@ from agent import DQNAgent, RandomAgent
 from buffer import Buffer
 from sampler import Sampler
 
-#Subfolder for Logs
-config_name = "best_agent"
-#createsummary writer for vusalization in tensorboard    
-time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# time_string = ""
+def testing(agent, size = 100, printing = True, load = None):
+    """ tests the given agent against a random agent
+    
+    Parameters: 
+        agent (DQNAgent): the agent to test
+        size (int): over how many games to take the average reward
+        printing (bool): if you want the results printed
+        load (tuple): (start, stop, step) if you want to load and test several saved models of the given agent  
+    """
 
-best_test_path = f"logs/{config_name}/{time_string}/best_train"
-#adapting_train_path = f"logs/{config_name}/{time_string}/adapting_train"
-best_test_writer = tf.summary.create_file_writer(best_test_path)
-#dapting_train_writer = tf.summary.create_file_writer(adapting_train_path)
+    if load:
+        start, stop, step = load
+    else: 
+        start, stop, step = 0,1,1
 
-#best_test_path = f"logs/{config_name}/{time_string}/best_test"
-#adapting_test_path = f"logs/{config_name}/{time_string}/adapting_test"
-#best_test_writer = tf.summary.create_file_writer(best_test_path)
-#adapting_test_writer = tf.summary.create_file_writer(adapting_test_path)
+    random_agent = RandomAgent()
+    sampler = Sampler(size,[agent,random_agent])
+    rewards = []
 
-#train_writer = [best_train_writer, adapting_train_writer]
-#test_writer = [best_test_writer, adapting_test_writer]
+    for i in range(start,stop,step):
+        if load:
+            agent.load_models(i)
+        reward = sampler.sample_from_game(0.0,save = False)
+        rewards.append(rewards)
+        if printing:
+            if load:
+                print(f"Best Agent {i} average reward: {reward[0]}")
+            else:
+                print(f"Best Agent average reward: {reward[0]}")
+            print(f"Random Agent average reward: {reward[1]}")
+            print(f"Ratio: {reward[0]- reward[1]}\n")
 
-model_path_best = f"model/{config_name}/{time_string}/best"
-#model_path_adapting = f"model/{config_name}/{time_string}/adapting"
+    return rewards
 
-# Hyperparameter
-iterations = 1000
-INNER_ITS = 500
-BATCH_SIZE = 6
-#reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
-epsilon = 1 #TODO
-EPSILON_DECAY = 0.99
-POLYAK = 0.9
+if __name__ == "__main__":
+    #Subfolder for Logs
+    config_name = "best_agent"
+    #createsummary writer for vusalization in tensorboard    
+    time_string = ""
 
-I = 249 # which model to load
-AV = 100 # how many games to play for each model to test
+    best_test_path = f"logs/{config_name}/{time_string}/best_train"
+    best_test_writer = tf.summary.create_file_writer(best_test_path)
 
-# create buffer
-best_buffer = Buffer(100000,1000)
-#adapting_buffer = Buffer(100000,1000)
+    model_path_best = f"model/{config_name}/{time_string}/best"
 
-# create agent
-env = ConnectFourEnv()
-best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
-random_agent = RandomAgent()
-sampler = Sampler(AV,[best_agent,random_agent])
+    # Hyperparameter for agent
+    iterations = 1000
+    INNER_ITS = 500
+    BATCH_SIZE = 6
+    #reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
+    epsilon = 1 #TODO
+    EPSILON_DECAY = 0.99
+    POLYAK = 0.9
 
-for i in range(49,1000,50):
-    best_agent.load_models(i)
-    rewards = sampler.sample_from_game(0.0,save = False)
-    print(f"Best Agent {I} average reward: {rewards[0]}")
-    print(f"Random Agent average reward: {rewards[1]}")
-    print(f"Ratio: {rewards[0]- rewards[1]}\n")
+    # hyperparameter for testing
+    AV = 1000 # how many games to play for each model to test
 
-print("done")
+    # create agent
+    env = ConnectFourEnv()
+    best_buffer = Buffer(100000,1000)
+    best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
+
+    rewards = testing(49,1000,50,best_agent,size=AV)
+
+    print("done")

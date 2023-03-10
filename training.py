@@ -1,10 +1,11 @@
 from sampler import Sampler
+from testing import testing
 import tensorflow as tf
 import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9): # 
+def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01): # 
     """ """
     # create Sampler 
     sampler = Sampler(BATCH_SIZE,[agent,agent]) # TODO change functions for just one agent
@@ -13,7 +14,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         
         start = time.time()
         # epsilon decay
-        epsilon = epsilon * epsilon_decay
+        epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
         agent.train_inner_iteration(train_writer,i)
@@ -21,6 +22,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         # save model
         if i % 100 == 0:
             agent.save_models(i)
+            testing(agent, size = 1000, print=True)
 
         # new sampling + add to buffer
         _ = sampler.sample_from_game(epsilon)

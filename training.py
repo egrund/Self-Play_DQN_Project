@@ -22,10 +22,10 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         # save model
         if i % 100 == 0:
             agent.save_models(i)
-            rewards = testing(agent, size = 100, print=True)
+            rewards = testing(agent, size = 100, printing=True)
 
-            with train_writer.as_default():
-                tf.summary.scalar(f"average_reward", rewards[0], step=i)
+            #with train_writer.as_default():
+                #tf.summary.scalar(f"average_reward", rewards[0][0], step=i)
 
         # new sampling + add to buffer
         _ = sampler.sample_from_game(epsilon)

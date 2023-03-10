@@ -18,6 +18,10 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         # train agent
         agent.train_inner_iteration(train_writer,i)
 
+        # save model
+        if i % 100 == 0:
+            agent.save_models(i)
+
         # new sampling + add to buffer
         _ = sampler.sample_from_game(epsilon)
 
@@ -25,7 +29,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
 
         # write summary
             
-        # logging the validation metrics to the log file which is used by tensorboard
+        # logging the metrics to the log file which is used by tensorboard
         with train_writer.as_default():
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
             tf.summary.scalar(f"time per iteration", end-start, step=i)

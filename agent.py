@@ -57,9 +57,6 @@ class DQNAgent:
 
         # reset all metrics
         self.model.reset_metrics()
-
-        # save model
-        self.model.save_weights(self.model_path + f"/{i}")
                 
                 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
@@ -89,3 +86,35 @@ class DQNAgent:
         probs = tf.where(available_actions_bool,probs,-1)
         # calculate best action
         return tf.argmax(probs, axis = -1)
+    
+    def save_models(self, i):
+        """ saves the model and the target model using i as iteration count """
+
+        self.model.save_weights(f"{self.model_path}/model/{i}")
+        self.target_model.save_weights(f"{self.model_path}/target_model/{i}")
+
+    def load_models(self, i):
+        self.model.load_weights(f"{self.model_path}/model/{i}")
+        self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
+
+
+class RandomAgent:
+
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+        """ 
+        selects an action using the model and an epsilon greedy policy 
+        
+        Parameters:
+            epsilon (float):
+            observations (array): (batch, 7, 7) using FourConnect
+            available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
+        
+        returns: 
+            the chosen action for each batch element
+        """
+
+        #random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
+        random_actions = [np.random.choice(a) for a in available_actions]
+        #best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions_bool).numpy()
+        return np.array(random_actions) #np.where(random_action_where,random_actions,best_actions)

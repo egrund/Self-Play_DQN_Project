@@ -1,0 +1,2 @@
+1. add a random seed everywhere before training the next one
+2. find good hyperparameters

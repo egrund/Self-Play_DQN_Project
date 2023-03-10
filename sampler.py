@@ -18,7 +18,7 @@ class Sampler:
         self.batch = batch
         self.agents = agents
   
-    def sample_from_game(self,epsilon):
+    def sample_from_game(self,epsilon, save = True):
         """ 
         samples from every environment in self.envs until it is done or reaches 10000 steps. 
 
@@ -66,7 +66,8 @@ class Sampler:
             shapes = [current_envs[i].shape[0] for i in range(2)]
 
         # save data in buffer
-        [self.agents[i].buffer.extend(sarsd[i]) for i in range(2)]
+        if save:
+            [self.agents[i].buffer.extend(sarsd[i]) for i in range(2)]
 
         # render for debugging
         # [e.render() for e in self.envs]

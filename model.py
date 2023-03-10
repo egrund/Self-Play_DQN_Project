@@ -54,7 +54,7 @@ class MyMLP(tf.keras.Model):
             # calculate q value of this state action pair
             Qsa = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
 
-            losses = self.loss(Qsa, r + (tf.constant(0.99)*Qmax)*(1-done))
+            losses = self.loss(Qsa, r + (1-(tf.constant(0.99)*Qmax)*(1-done))) # 1- to use the minimax principle
 
             self.metric[0].update_state(losses)
 

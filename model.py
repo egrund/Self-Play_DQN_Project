@@ -28,7 +28,7 @@ class MyMLP(tf.keras.Model):
         for m in self.metric:
             m.reset_states()
 
-    @tf.function
+    @tf.function(reduce_retracing=True)
     def call(self, states):
         """ forward propagation of the ANN """
         x = tf.keras.layers.Flatten()(states)
@@ -37,7 +37,7 @@ class MyMLP(tf.keras.Model):
         x = self.out(x)
         return x
 
-    @tf.function
+    @tf.function(reduce_retracing=True)
     def train_step(self, inputs, target_model):
         """ 
         one train step of the model

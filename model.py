@@ -14,7 +14,7 @@ class MyMLP(tf.keras.Model):
         """
 
         super(MyMLP, self).__init__()
-        self.dense_list = [ tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
+        self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
         self.optimizer = optimizer
@@ -49,12 +49,14 @@ class MyMLP(tf.keras.Model):
 
         with tf.GradientTape() as tape: 
             
-            # calculate the target Q value
+            # calculate the target Q value, only if not done
             Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
             # calculate q value of this state action pair
-            Qsa = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
+            Qsa_estimated = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
+            # calculate the best Qsa which is the target
+            target = r + tf.constant(0.99)*(Qmax)*(1-done)
 
-            losses = self.loss(Qsa, r + (1-(tf.constant(0.99)*Qmax)*(1-done))) # 1- to use the minimax principle
+            losses = self.loss(Qsa_estimated, target)
 
             self.metric[0].update_state(losses)
 

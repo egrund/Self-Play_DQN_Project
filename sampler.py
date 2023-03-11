@@ -24,6 +24,7 @@ class Sampler:
 
         Parameters:
             epsilon (float): epsilon for the epsilon greedy policy
+            save (bool): whether you want to save the generated samples in the agent's buffer
         """
 
         sarsd = [[],[]]

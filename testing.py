@@ -23,21 +23,19 @@ def testing(agent, size = 100, printing = True, load = None):
         start, stop, step = 0,1,1
 
     random_agent = RandomAgent()
-    sampler = Sampler(size,[agent,random_agent])
+    sampler = Sampler(size,agent,random_agent)
     rewards = []
 
     for i in range(start,stop,step):
         if load:
             agent.load_models(i)
-        reward = sampler.sample_from_game(0.0,save = False)
-        rewards.append(rewards)
+        reward = sampler.sample_from_game_wrapper(0.0,save = False)
+        rewards.append(reward)
         if printing:
             if load:
-                print(f"Best Agent {i} average reward: {reward[0]}")
+                print(f"Best Agent {i} average reward: {reward}")
             else:
-                print(f"Best Agent average reward: {reward[0]}")
-            print(f"Random Agent average reward: {reward[1]}")
-            print(f"Ratio: {reward[0]- reward[1]}\n")
+                print(f"Best Agent average reward: {reward}")
 
     return rewards
 

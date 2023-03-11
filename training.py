@@ -2,15 +2,16 @@ from sampler import Sampler
 from testing import testing
 from agent import RandomAgent
 from env_wrapper import ConnectFourSelfPLay
+from keras_gym_env import ConnectFourEnv
 import tensorflow as tf
 import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = ConnectFourSelfPLay()): # 
+def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = ConnectFourSelfPLay(ConnectFourEnv())): # 
     """ """
     # create Sampler 
-    old_agent = agent.copy(env)
+    old_agent = agent.copyAgent(env)
     sampler = Sampler(BATCH_SIZE,agent = agent, opponent = old_agent)
     sampler.fill_buffer(epsilon)
     for i in tqdm.tqdm(range(iterations)):
@@ -33,7 +34,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         # new sampling + add to buffer
         sampler.set_opponent(old_agent)
         _ = sampler.sample_from_game_wrapper(epsilon)
-        old_agent = agent.copy(env)
+        old_agent = agent.copyAgent(env)
 
         end = time.time()
 

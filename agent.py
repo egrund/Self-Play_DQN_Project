@@ -11,7 +11,7 @@ class Agent:
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r):
 
         # create an initialize model and target_model
         self.model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
@@ -28,6 +28,7 @@ class DQNAgent(Agent):
         self.model_path = model_path
         self.buffer = buffer
         self.batch = batch 
+        self.reward_function = reward_function
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
@@ -78,7 +79,7 @@ class DQNAgent(Agent):
 
         random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
         random_actions = [np.random.choice(a) for a in available_actions]
-        best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions_bool).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.int32), available_actions, available_actions_bool).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
     #@tf.function
@@ -117,7 +118,6 @@ class RandomAgent (Agent):
         selects an action using the model and an epsilon greedy policy 
         
         Parameters:
-            epsilon (float):
             observations (array): (batch, 7, 7) using FourConnect
             available_actions (list): containing all the available actions for each batch observation
             available_actions_bool (list): containing for every index whether the action with this value is in available actions
@@ -126,7 +126,6 @@ class RandomAgent (Agent):
             the chosen action for each batch element
         """
 
-        #random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
+        
         random_actions = [np.random.choice(a) for a in available_actions]
-        #best_actions = self.select_action(tf.convert_to_tensor(observations,dtype=tf.int32), available_actions_bool).numpy()
-        return np.array(random_actions) #np.where(random_action_where,random_actions,best_actions)
+        return tf.convert_to_tensor(random_actions) 

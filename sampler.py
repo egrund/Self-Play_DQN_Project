@@ -26,24 +26,25 @@ class Sampler:
         """ samples from env wrappers"""
 
         sarsd = []
+        current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))
-        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,self.envs)])
+        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])
 
         for e in range(10000):
-            available_actions = [env.available_actions for env in self.envs]
-            available_actions_bool = [env.available_actions_mask for env in self.envs]
+            available_actions = [env.available_actions for env in current_envs]
+            available_actions_bool = [env.available_actions_mask for env in current_envs]
 
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
 
-            results = [env.step(actions[i]) for i,env in enumerate(self.envs)] # new state, reward, done, info
+            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info
 
             # bring everything in the right order
-            results = [(observations[i],actions[i],results[i][1],results[i][0],results[i][2]) for i in range(len(self.env))] # state, action, reward, new state, done
+            results = [(observations[i],actions[i],results[i][1],results[i][0],results[i][2]) for i in range(len(current_envs))] # state, action, reward, new state, done
 
             sarsd.extend(results)
 
-            observations = np.array([results[i][3] for i in range(len(self.env)) if not results[i][4]])
-            current_envs = np.array([current_envs[i] for i in range(len(self.env)) if not results[i][4]])
+            observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
+            current_envs = np.array([current_envs[i] for i in range(len(current_envs)) if not results[i][4]])
 
             # check if all envs are done
             if observations.shape == (0,):
@@ -57,7 +58,7 @@ class Sampler:
         # [e.render() for e in self.envs]
 
         # return averade reward for the agent
-        return np.mean([sarsd[i][2] for i in range(len(self.envs))], dtype=object)
+        return np.mean([sample[2] for sample in sarsd],dtype=object)
 
   
     def sample_from_game(self,epsilon, save = True):

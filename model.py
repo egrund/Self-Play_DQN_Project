@@ -1,9 +1,72 @@
 import tensorflow as tf
 
-class MyMLP(tf.keras.Model):
+class MyCNNNormalizationLayer(tf.keras.layers.Layer):
+    """ a layer for a CNN with kernel size 3 and ReLu as the activation function """
+
+    def __init__(self,filters,normalization=False, reg = None):
+        """ Constructor
+        
+        Parameters: 
+            filters (int) = how many filters the Conv2D layer will have
+            normalization (boolean) = whether the output of the layer should be normalized 
+        """
+        super(MyCNNNormalizationLayer, self).__init__()
+        self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=3, padding='same', kernel_regularizer = reg)
+        self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
+        self.activation = tf.keras.layers.Activation("relu")
+
+    @tf.function
+    def call(self,x,training=None):
+        """ forward propagation """
+
+        x = self.conv_layer(x)
+        if self.norm_layer:
+            x = self.norm_layer(x,training)
+        x = self.activation(x)
+
+        return x
+    
+class MyCNNBlock(tf.keras.layers.Layer):
+    """ a block for a CNN having several convoluted layers with filters and kernel size 3 and ReLu as the activation function """
+
+    def __init__(self,layers,filters,global_pool = False,mode = None,normalization = False, reg = None, dropout_layer = None):
+        """ Constructor 
+        
+        Parameters: 
+            layers (int) = how many Conv2D you want
+            filters (int) = how many filters the Conv2D layers should have
+            global_pool (boolean) = global average pooling at the end if True else MaxPooling2D
+            denseNet (boolean) = whether we want to implement a denseNet (creates a concatenate layer if True)
+        """
+
+        super(MyCNNBlock, self).__init__()
+        self.dropout_layer = dropout_layer
+        self.conv_layers =  [MyCNNNormalizationLayer(filters,normalization, reg) for _ in range(layers)]
+        self.mode = mode
+        switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
+        self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
+        self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)
+
+    @tf.function
+    def call(self,inputs,training=None):
+        """ forward propagation of this block """
+        x = inputs
+        for i, layer in enumerate(self.conv_layers):
+            x = layer(x, training)
+            if(i==0 and self.mode == "res"): # for resnet add output of first layer to final output, not input of first layer
+                inputs = x
+            if self.dropout_layer:
+                x = self.dropout_layer(x, training)
+        if(self.extra_layer is not None):
+            x = self.extra_layer([inputs, x])
+
+        x = self.pool(x)
+        return x
+
+class MyCNN_RL(tf.keras.Model):
     """ an ANN created to train on the mnist dataset """
     
-    def __init__(self,hidden_units : list = [128,64,32],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy()):
+    def __init__(self,hidden_units : list = [64],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True):
         """ Constructor 
         
         Parameters: 
@@ -11,9 +74,15 @@ class MyMLP(tf.keras.Model):
             output_units (int) = the number of wanted output units
             hidden_activation (function)= the activation function for the hidden layers
             output_activation (function)= the activation fuction for the output layer
+            dropout (0<= int <1) = rate of dropout for after input and after dense
+            normalisation(boolean) = if True use Batchnorm
         """
 
-        super(MyMLP, self).__init__()
+        super(MyCNN_RL, self).__init__()
+        
+        self.dropout_rate = dropout_rate
+        self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
+        self.block = MyCNNBlock(layers = 2,filters = 24 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
         self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
@@ -29,9 +98,9 @@ class MyMLP(tf.keras.Model):
             m.reset_states()
 
     @tf.function(reduce_retracing=True)
-    def call(self, states):
+    def call(self, states, training = False):
         """ forward propagation of the ANN """
-        x = tf.keras.layers.Flatten()(states)
+        x = self.block(states, training = training)
         for layer in self.dense_list:
             x = layer(x)
         x = self.out(x)

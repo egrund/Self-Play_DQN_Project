@@ -24,18 +24,21 @@ class ConnectFourSelfPLay(ConnectFourEnv):
         o_action = self.opponent.select_action(tf.expand_dims(s_0, axis = 0), [self.available_actions], [self.available_actions_mask]).numpy()[0]
         # do the opponent's action
         s_1,_,_,_ = super().step(o_action)
-        return s_1
+        return tf.cast(s_1, dtype=tf.float32)
     
     def step(self,a): 
         # do my step
         s_0,r_0,d_0,state_id = super().step(a)
         
         if d_0:
-            return s_0,r_0,d_0,state_id
+            return tf.cast(s_0, dtype= tf.float32),r_0,d_0,state_id
             
         # get the opponent's action
-        o_action = self.opponent.select_action(tf.expand_dims(s_0, axis = 0),[self.available_actions], [self.available_actions_mask]).numpy()[0]
+        o_action = self.opponent.select_action(tf.expand_dims(tf.cast(s_0, dtype = tf.float32), axis = 0),[self.available_actions], [self.available_actions_mask]).numpy()[0]
         # do the opponent's action
         s_1,r_1,d_1,state_id = super().step(o_action)
         # calculate the returns
-        return s_1,r_0 - r_1,d_1,state_id
+        return tf.cast(s_1, dtype= tf.float32),r_0 - r_1,d_1,state_id
+    
+    def reset(self):
+        return tf.cast(super().reset(), dtype= tf.float32)

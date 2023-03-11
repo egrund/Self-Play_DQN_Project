@@ -1,4 +1,4 @@
-from model import MyMLP
+from model import MyCNN_RL
 import tensorflow as tf
 import numpy as np
 import random as rnd
@@ -11,11 +11,11 @@ class Agent:
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True):
 
         # create an initialize model and target_model
-        self.model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
-        self.target_model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
+        self.model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation)
+        self.target_model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation)
         obs = tf.expand_dims(env.reset(),axis=0)
         self.model(obs)
         self.target_model(obs)
@@ -48,16 +48,16 @@ class DQNAgent(Agent):
 
             # if prioritized experience replay, then here
 
-            # logs
-            if summary_writer:
-                with summary_writer.as_default():
-                    tf.summary.scalar('loss', loss.get('loss'), step=j+i*self.inner_iterations)
-
 
         # polyak averaging
         self.target_model.set_weights(
             (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
+        
+        # logs
+        if summary_writer:
+            with summary_writer.as_default():
+                tf.summary.scalar('loss', loss.get('loss'), step=i)
 
         # reset all metrics
         self.model.reset_metrics()
@@ -79,7 +79,7 @@ class DQNAgent(Agent):
 
         random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
         random_actions = [np.random.choice(a) for a in available_actions]
-        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.int32), available_actions, available_actions_bool).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
     #@tf.function

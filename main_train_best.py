@@ -40,7 +40,7 @@ best_buffer = Buffer(capacity = 100000,min_size = 30000)
 env = ConnectFourEnv()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
 
-train_self_play_best(best_agent, BATCH_SIZE, iterations, best_train_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN)
+train_self_play_best(best_agent, BATCH_SIZE, iterations, best_train_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,env = env)
 
 
 print("done")

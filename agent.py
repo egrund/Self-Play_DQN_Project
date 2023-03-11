@@ -3,10 +3,15 @@ import tensorflow as tf
 import numpy as np
 import random as rnd
 
-class DQNAgent:
+class Agent:
+
+    def select_action(self, observations, available_actions, available_actions_bool):
+        raise NotImplementedError("select_action has to be implemented to be used")
+
+class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, reward_function = lambda d,r: r, polyak_update = 0.9, inner_iterations = 10):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10):
 
         # create an initialize model and target_model
         self.model = MyMLP(hidden_units = [128,64,32], output_units = env.action_space.n)
@@ -22,9 +27,7 @@ class DQNAgent:
         # self.env = env
         self.model_path = model_path
         self.buffer = buffer
-        self.batch = batch
-        self.reward_function = reward_function
-        
+        self.batch = batch 
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
@@ -79,7 +82,7 @@ class DQNAgent:
         return np.where(random_action_where,random_actions,best_actions)
 
     #@tf.function
-    def select_action(self, observations, available_actions_bool):
+    def select_action(self, observations, available_actions, available_actions_bool):
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)
         # remove all unavailable actions
@@ -97,10 +100,19 @@ class DQNAgent:
         self.model.load_weights(f"{self.model_path}/model/{i}")
         self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
 
+    def copyAgent(self,env):
+        """ 
+        Creates an Agent which can be used to sample action, but which cannot be trained (only the models are copied)
+        """
 
-class RandomAgent:
+        copy = DQNAgent(env, buffer = None, batch =self.batch, model_path = "")
+        copy.model.set_weights(np.array(self.model.get_weights(),dtype = object))
+        copy.target_model.set_weights(np.array(self.target_model.get_weights(),dtype = object))
+        return copy
 
-    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+class RandomAgent (Agent):
+
+    def select_action(self,observations, available_actions, available_actions_bool):
         """ 
         selects an action using the model and an epsilon greedy policy 
         

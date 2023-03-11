@@ -1,4 +1,5 @@
 from keras_gym_env import ConnectFourEnv
+from env_wrapper import ConnectFourSelfPLay
 import numpy as np
 import tensorflow as tf
 
@@ -12,11 +13,52 @@ class Sampler:
         agents (list): list of two agents to use for the sampling procedure
     """
 
-    def __init__(self,batch,agents):
+    def __init__(self,batch,agent, opponent):
 
-        self.envs = [ConnectFourEnv() for _ in range(batch)]
+        self.envs = [ConnectFourSelfPLay(opponent) for _ in range(batch)]
         self.batch = batch
-        self.agents = agents
+        self.agent = agent
+
+    def set_opponent(self, opponent):
+        [env.set_opponent(opponent) for env in self.envs]
+
+    def sample_from_game_wrapper(self,epsilon, save = True):
+        """ samples from env wrappers"""
+
+        sarsd = []
+        agent_turn = np.random.randint(0,2,(self.batch,))
+        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,self.envs)])
+
+        for e in range(10000):
+            available_actions = [env.available_actions for env in self.envs]
+            available_actions_bool = [env.available_actions_mask for env in self.envs]
+
+            actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
+
+            results = [env.step(actions[i]) for i,env in enumerate(self.envs)] # new state, reward, done, info
+
+            # bring everything in the right order
+            results = [(observations[i],actions[i],results[i][1],results[i][0],results[i][2]) for i in range(len(self.env))] # state, action, reward, new state, done
+
+            sarsd.extend(results)
+
+            observations = np.array([results[i][3] for i in range(len(self.env)) if not results[i][4]])
+            current_envs = np.array([current_envs[i] for i in range(len(self.env)) if not results[i][4]])
+
+            # check if all envs are done
+            if observations.shape == (0,):
+                break
+
+        # save data in buffer
+        if save:
+            self.agent.buffer.extend(sarsd)
+
+        # render for debugging or playing
+        # [e.render() for e in self.envs]
+
+        # return averade reward for the agent
+        return np.mean([sarsd[i][2] for i in range(len(self.envs))], dtype=object)
+
   
     def sample_from_game(self,epsilon, save = True):
         """ 
@@ -74,7 +116,6 @@ class Sampler:
         # [e.render() for e in self.envs]
 
         # return averade reward for both agents
-        #print(tuple([np.mean([sarsd[i][j][2] for j in range(len(sarsd[i]))], dtype=object) for i in range(2)]))
         return tuple([np.mean([sarsd[i][j][2] for j in range(len(sarsd[i]))], dtype=object) for i in range(2)])
 
     def fill_buffers(self,epsilon):
@@ -87,3 +128,13 @@ class Sampler:
         
         while(any([self.agents[i].buffer.current_size < self.agents[i].buffer.min_size for i in range(2)])):
             _ = self.sample_from_game(epsilon)
+
+    def fill_buffer(self,epsilon):
+        """ fills the empty buffer of the agent 
+        
+        Parameters: 
+            epsilon (float): epsilon for the epsilon greedy policy of the agent
+        """
+
+        while(self.agent.buffer.current_size < self.agent.buffer.min_size):
+            _ = self.sample_from_game_wrapper(epsilon)

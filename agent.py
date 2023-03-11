@@ -53,15 +53,15 @@ class DQNAgent(Agent):
         self.target_model.set_weights(
             (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
-        
+        loss_value = loss.get('loss')
         # logs
         if summary_writer:
             with summary_writer.as_default():
-                tf.summary.scalar('loss', loss.get('loss'), step=i)
+                tf.summary.scalar('loss', loss_value, step=i)
 
         # reset all metrics
         self.model.reset_metrics()
-                
+        return loss_value
                 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
         """ 

@@ -21,15 +21,15 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
-        agent.train_inner_iteration(train_writer,i)
+        loss = agent.train_inner_iteration(train_writer,i)
 
         # save model
         if i % 100 == 0:
             agent.save_models(i)
             rewards = testing(agent, size = 100, printing=True)
-
-            #with train_writer.as_default():
-                #tf.summary.scalar(f"average_reward", rewards[0][0], step=i)
+            with train_writer.as_default():
+                tf.summary.scalar(f"average_reward", rewards[0], step=i)
+            print("Loss ",i,": ", loss.numpy())
 
         # new sampling + add to buffer
         sampler.set_opponent(old_agent)

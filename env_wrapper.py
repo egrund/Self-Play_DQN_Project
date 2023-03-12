@@ -16,7 +16,8 @@ class ConnectFourSelfPLay(ConnectFourEnv):
 
     def set_opponent(self, opponent : Agent):
         self.opponent = opponent
-    
+        
+        
     def opponent_starts(self):
         """ let the opponent do the first action, works similar to reset"""
         s_0 = self.reset()

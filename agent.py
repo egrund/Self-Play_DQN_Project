@@ -66,7 +66,7 @@ class DQNAgent(Agent):
         # reset all metrics
         self.model.reset_metrics()
         
-        print("Total_inner_iteration_time: ", time.time() - start, "\n")
+        #print("Total_inner_iteration_time: ", time.time() - start, "\n")
         
         
         return loss_value
@@ -139,7 +139,7 @@ class RandomAgent (Agent):
         return tf.convert_to_tensor(random_actions) 
     
     
-class Agent:
+class MinMax_Agent:
     """ 
         selects an action using the model and an min max policy 
         

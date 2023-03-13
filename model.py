@@ -14,7 +14,6 @@ class MyCNNNormalizationLayer(tf.keras.layers.Layer):
         self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=4, padding='same', kernel_regularizer = reg)
         self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
         self.activation = tf.keras.layers.Activation("relu")
-
     @tf.function(reduce_retracing=True)
     def call(self,x,training=None):
         """ forward propagation """

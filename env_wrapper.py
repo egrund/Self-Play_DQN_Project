@@ -10,7 +10,7 @@ class ConnectFourSelfPLay(ConnectFourEnv):
     opponent (Agent): has to be an agent
     """
 
-    def __init__(self,opponent : Agent):
+    def __init__(self,opponent : Agent = None):
         super(ConnectFourEnv, self).__init__()
         self.opponent = opponent
 

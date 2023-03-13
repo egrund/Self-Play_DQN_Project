@@ -11,11 +11,11 @@ class MyCNNNormalizationLayer(tf.keras.layers.Layer):
             normalization (boolean) = whether the output of the layer should be normalized 
         """
         super(MyCNNNormalizationLayer, self).__init__()
-        self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=3, padding='same', kernel_regularizer = reg)
+        self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=4, padding='same', kernel_regularizer = reg)
         self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
         self.activation = tf.keras.layers.Activation("relu")
 
-    @tf.function
+    @tf.function(reduce_retracing=True)
     def call(self,x,training=None):
         """ forward propagation """
 
@@ -47,7 +47,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
         self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
         self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)
 
-    @tf.function
+    @tf.function(reduce_retracing=True)
     def call(self,inputs,training=None):
         """ forward propagation of this block """
         x = inputs
@@ -66,7 +66,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
 class MyCNN_RL(tf.keras.Model):
     """ an ANN created to train on the mnist dataset """
     
-    def __init__(self,hidden_units : list = [64],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True):
+    def __init__(self,hidden_units : list = [64,64],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True):
         """ Constructor 
         
         Parameters: 
@@ -82,7 +82,7 @@ class MyCNN_RL(tf.keras.Model):
         
         self.dropout_rate = dropout_rate
         self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
-        self.block = MyCNNBlock(layers = 2,filters = 24 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
+        self.block = MyCNNBlock(layers = 1,filters = 128 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
         self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 

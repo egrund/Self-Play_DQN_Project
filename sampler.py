@@ -2,6 +2,7 @@ from keras_gym_env import ConnectFourEnv
 from env_wrapper import ConnectFourSelfPLay
 import numpy as np
 import tensorflow as tf
+import time
 
 class Sampler:
     """ 
@@ -24,7 +25,7 @@ class Sampler:
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""
-
+        start = time.time()
         sarsd = []
         current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))

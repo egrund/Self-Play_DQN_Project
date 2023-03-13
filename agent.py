@@ -2,9 +2,10 @@ from model import MyCNN_RL
 import tensorflow as tf
 import numpy as np
 import random as rnd
+import time
 
 class Agent:
-
+    
     def select_action(self, observations, available_actions, available_actions_bool):
         raise NotImplementedError("select_action has to be implemented to be used")
 
@@ -32,6 +33,7 @@ class DQNAgent(Agent):
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
+        #start = time.time()
         for j in range(self.inner_iterations):
 
             # sample random minibatch of transitions
@@ -47,12 +49,14 @@ class DQNAgent(Agent):
             loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 
             # if prioritized experience replay, then here
-
+            
+        #print("inner_iteration_average per iteration: ", (time.time() - start)/self.inner_iterations)
 
         # polyak averaging
         self.target_model.set_weights(
             (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
+        
         loss_value = loss.get('loss')
         # logs
         if summary_writer:
@@ -61,6 +65,10 @@ class DQNAgent(Agent):
 
         # reset all metrics
         self.model.reset_metrics()
+        
+        print("Total_inner_iteration_time: ", time.time() - start, "\n")
+        
+        
         return loss_value
                 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
@@ -129,3 +137,19 @@ class RandomAgent (Agent):
         
         random_actions = [np.random.choice(a) for a in available_actions]
         return tf.convert_to_tensor(random_actions) 
+    
+    
+class Agent:
+    """ 
+        selects an action using the model and an min max policy 
+        
+        Parameters:
+            observations (array): (batch, 7, 7) using FourConnect
+            available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
+        
+        returns: 
+            the chosen action for each batch element
+        """
+    def select_action(self, observations, available_actions, available_actions_bool):
+        raise NotImplementedError("select_action has to be implemented to be used")

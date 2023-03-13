@@ -1,14 +1,14 @@
-from keras_gym_env import ConnectFourEnv
 from env_wrapper import ConnectFourSelfPLay
+
 import numpy as np
 import datetime
 import tensorflow as tf
 import random as rnd
 
+
 from agent import DQNAgent
 from buffer import Buffer
 from training import train_self_play_best
-
 
 # seeds
 seed = 42
@@ -18,7 +18,7 @@ rnd.seed(seed)
 #Subfolder for Logs
 config_name = "best_agent"
 #createsummary writer for vusalization in tensorboard    
-time_string = "20230311-234952"
+time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""
 
 best_train_path = f"logs/{config_name}/{time_string}/best_train"
@@ -34,16 +34,16 @@ epsilon = 1
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.995
 POLYAK = 0.9
-dropout_rate = 0.5, 
+dropout_rate = 0.2, 
 normalisation = True
 
 # create buffer
-best_buffer = Buffer(capacity = 100000,min_size = 100)
+best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
-env = ConnectFourEnv()
-env = ConnectFourSelfPLay(ConnectFourEnv)
+env = ConnectFourSelfPLay()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
+
 best_agent.load_models(0)
 env.set_opponent(best_agent)
 

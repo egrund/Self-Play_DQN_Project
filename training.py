@@ -10,9 +10,11 @@ import tqdm
   
 def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = ConnectFourSelfPLay(ConnectFourEnv())): # 
     """ """
+    sampler_time_average = 0
+    inner_time_average = 0
     # create Sampler 
     old_agent = agent.copyAgent(env)
-    sampler = Sampler(BATCH_SIZE,agent = agent, opponent = old_agent)
+    sampler = Sampler(BATCH_SIZE,agent = agent, opponent = RandomAgent())
     sampler.fill_buffer(epsilon)
     for i in tqdm.tqdm(range(iterations)):
         
@@ -22,18 +24,28 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
 
         # train agent
         loss = agent.train_inner_iteration(train_writer,i)
-
+        inner_time_100 += time.time() - start
+        
         # save model
         if i % 100 == 0:
             agent.save_models(i)
             rewards = testing(agent, size = 100, printing=True)
             with train_writer.as_default():
                 tf.summary.scalar(f"average_reward", rewards[0], step=i)
-            print("Loss ",i,": ", loss.numpy())
+                
+            #prints to get times every 100 iterations
+            print("Loss ",i,": ", loss.numpy(), "\n")
+            print("inner_iteration_average last 100 iterations: ", inner_time_100/100)
+            print("Average_Sampling_Time last 100 iterations: ", sampler_time_100/100 , "\n")           
+            
+            inner_time_100 = 0
+            sampler_time_100 = 0
 
         # new sampling + add to buffer
+        sampler_time = time.time()
         sampler.set_opponent(old_agent)
         _ = sampler.sample_from_game_wrapper(epsilon)
+        sampler_time_100 += time.time() - sampler_time
         old_agent = agent.copyAgent(env)
 
         end = time.time()
@@ -44,7 +56,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
         with train_writer.as_default():
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
             tf.summary.scalar(f"time per iteration", end-start, step=i)
-
+        print("Outer_Iteration_time per iteration: ", end-start, "\n")
         #print("\n")
 
 def train_adapting(agents, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9): # 

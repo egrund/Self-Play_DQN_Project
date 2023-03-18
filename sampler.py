@@ -1,7 +1,6 @@
-from keras_gym_env import ConnectFourEnv
 from env_wrapper import ConnectFourSelfPLay
+from agent import Agent
 import numpy as np
-import tensorflow as tf
 import time
 
 class Sampler:
@@ -14,14 +13,17 @@ class Sampler:
         agents (list): list of two agents to use for the sampling procedure
     """
 
-    def __init__(self,batch,agent, opponent):
+    def __init__(self,batch,agent, opponent : Agent ,opponent_epsilon : float = 0):
 
-        self.envs = [ConnectFourSelfPLay(opponent) for _ in range(batch)]
+        self.envs = [ConnectFourSelfPLay(opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
 
     def set_opponent(self, opponent):
         [env.set_opponent(opponent) for env in self.envs]
+
+    def set_opponent_epsilon(self,epsilon):
+        [env.set_epsilon(epsilon) for env in self.envs]
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""

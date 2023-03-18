@@ -6,7 +6,19 @@ import time
 
 class Agent:
     
-    def select_action(self, observations, available_actions, available_actions_bool):
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+        """ 
+        selects an action using the model and an epsilon greedy policy 
+        
+        Parameters:
+            epsilon (float):
+            observations (array): (batch, 7, 7) using FourConnect
+            available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
+        
+        returns: 
+            the chosen action for each batch element
+        """
         raise NotImplementedError("select_action has to be implemented to be used")
 
 class DQNAgent(Agent):
@@ -150,11 +162,13 @@ class DQNAgent(Agent):
 
 class RandomAgent (Agent):
 
-    def select_action(self,observations, available_actions, available_actions_bool):
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
         """ 
         selects an action using the model and an epsilon greedy policy 
+        but because it is a random agent, action is always random
         
         Parameters:
+            epsilon (float):
             observations (array): (batch, 7, 7) using FourConnect
             available_actions (list): containing all the available actions for each batch observation
             available_actions_bool (list): containing for every index whether the action with this value is in available actions
@@ -162,7 +176,6 @@ class RandomAgent (Agent):
         returns: 
             the chosen action for each batch element
         """
-
         
         random_actions = [np.random.choice(a) for a in available_actions]
         return tf.convert_to_tensor(random_actions) 
@@ -180,5 +193,25 @@ class MinMax_Agent (Agent):
         returns: 
             the chosen action for each batch element
         """
+    
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+        """ 
+        selects an action using the model and an epsilon greedy policy 
+        
+        Parameters:
+            epsilon (float):
+            observations (array): (batch, 7, 7) using FourConnect
+            available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
+        
+        returns: 
+            the chosen action for each batch element
+        """
+        random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
+        random_actions = [np.random.choice(a) for a in available_actions]
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool).numpy()
+        return np.where(random_action_where,random_actions,best_actions)
+    
     def select_action(self, observations, available_actions, available_actions_bool):
-        raise NotImplementedError("select_action has to be implemented to be used")
+        """ selects the currently best action using the model """
+        raise NotImplementedError("select_action in MinMax_Agent has to be implemented to be used")

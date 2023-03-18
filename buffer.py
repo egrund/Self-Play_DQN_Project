@@ -32,27 +32,31 @@ class Buffer:
         """
 
         # if there is data to add, buffer is not empty anymore
-        if self.sarsd: 
+        if sarsd: 
             self.empty = False
 
-        self.sort()
+        priority_sorted = sorted(self.priorities, reverse=True)
 
         # first element is supposed to have max priority
-        max_priority = self.priorities[0] if self.priorities else 1
+        max_priority = priority_sorted[0] if priority_sorted else 1
 
         #extend till the capacity is reached
         for sample in sarsd:
-
-            # put priority at the beginning, add to front of list
-            self.sarsd_list.insert(0,sample)
-            self.priorities.insert(0,max_priority)
             
             if(self.current_size < self.capacity):
+                self.sarsd_list.insert(0,sample)
+                self.priorities.insert(0,max_priority)
+                priority_sorted.insert(0,max_priority)
                 self.current_size += 1          
+                # no sorting needed as max still in front
             else:
-                # remove old data at the end. 
-                self.sarsd_list.pop(-1)
-                self.priorities.pop(-1)
+                # remove lowest data
+                idx = self.priorities.index(priority_sorted[-1])
+                self.sarsd_list[idx] = sample
+                self.priorities[idx] = max_priority
+                priority_sorted[-1] = max_priority
+                # in case rather sort new that use index -2, as the two values could be the same and we could remove our new sample
+                priority_sorted.sort(reverse=True)
 
     def sample_minibatch(self, batch_size):
         """ samples a minibatch from the buffer """
@@ -80,11 +84,6 @@ class Buffer:
             output.append(self.sarsd_list[i])
         
         return output
-    
-    def sort(self):
-        if self.empty:
-            raise RuntimeError("The buffer has to be filled to sort.")
-        self.sarsd_list.sort(key = lambda x: self.priorities[self.sarsd_list.index(x)])
 
     def update_priorities(self,priorities):
         """ Updates the priorities for the last given minibatch in order. """
@@ -110,5 +109,5 @@ class Buffer:
             raise RuntimeError("The buffer has to be filled to normalize priorities.")
         
         priorities = np.power(np.array(self.priorities),0.3)
-        self.priorities = priorities/(np.sum(priorities)+1)
+        self.priorities = list(priorities/(np.sum(priorities)+1))
 

@@ -130,15 +130,12 @@ class DQNAgent(Agent):
 
         old_Q = tf.gather(self.model(state,training=False),tf.cast(action,dtype=tf.int32),batch_dims=1)
 
+        new_action = tf.argmax(self.model(new_state,training = False),axis = -1)
+        new_Q = tf.gather(self.target_model(state,training = False), new_action, batch_dims = 1)
+
         # if the game is done, we cannot do another move
         # especially if we did the winning action the newly received state is in the perspective of the opponent. 
-        if not done:
-            new_action = tf.argmax(self.model(new_state,training = False),axis = -1)
-            new_Q = tf.gather(self.target_model(state,training = False), new_action, batch_dims = 1)
-        else:
-            new_Q = tf.constant(0)
-
-        return tf.abs(reward + tf.constant(0.99) * new_Q - old_Q)
+        return tf.abs(reward + tf.constant(0.99) * new_Q * (1-done) - old_Q)
     
     def save_models(self, i):
         """ saves the model and the target model using i as iteration count """
@@ -177,8 +174,8 @@ class RandomAgent (Agent):
             the chosen action for each batch element
         """
         
-        random_actions = [np.random.choice(a) for a in available_actions]
-        return tf.convert_to_tensor(random_actions) 
+        [np.random.choice(a) for a in available_actions]
+        return np.array([np.random.choice(a) for a in available_actions])
     
     
 class MinMax_Agent (Agent):

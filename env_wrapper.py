@@ -25,7 +25,7 @@ class ConnectFourSelfPLay(ConnectFourEnv):
         """ let the opponent do the first action, works similar to reset"""
         s_0 = self.reset()
         # get the opponent's action
-        o_action = self.opponent.select_action_epsilon_greedy(self.epsilon, tf.expand_dims(s_0, axis = 0), [self.available_actions], [self.available_actions_mask]).numpy()[0]
+        o_action = self.opponent.select_action_epsilon_greedy(self.epsilon, tf.expand_dims(s_0, axis = 0), [self.available_actions], [self.available_actions_mask])[0]
         # do the opponent's action
         s_1,_,_,_ = super().step(o_action)
         return tf.cast(s_1, dtype=tf.float32)
@@ -38,7 +38,7 @@ class ConnectFourSelfPLay(ConnectFourEnv):
             return tf.cast(s_0, dtype= tf.float32),r_0,d_0,state_id
             
         # get the opponent's action
-        o_action = self.opponent.select_action_epilon_greedy(self.epsilon,tf.expand_dims(tf.cast(s_0, dtype = tf.float32), axis = 0),[self.available_actions], [self.available_actions_mask]).numpy()[0]
+        o_action = self.opponent.select_action_epsilon_greedy(self.epsilon,tf.expand_dims(tf.cast(s_0, dtype = tf.float32), axis = 0),[self.available_actions], [self.available_actions_mask])[0]
         # do the opponent's action
         s_1,r_1,d_1,state_id = super().step(o_action)
         # calculate the returns

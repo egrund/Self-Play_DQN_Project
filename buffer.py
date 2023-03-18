@@ -1,5 +1,6 @@
 import random as rnd
 import numpy as np
+from itertools import chain
 
 class Buffer:
     """ 
@@ -87,14 +88,18 @@ class Buffer:
 
     def update_priorities(self,priorities):
         """ Updates the priorities for the last given minibatch in order. """
-
+        
         if self.empty:
             raise RuntimeError("The buffer has to be filled to update.")
         if self.last_indices == None:
             raise RuntimeError("You need to sample from the buffer before you can update priorities.")
-
+        
         for i,p in zip(self.last_indices,priorities): 
             self.priorities[i] = p
+            
+            
+        #
+            #print zip(chain(*a),chain(*b))
 
     def get_minibatch_indices(self,batch_size):
         """ returns random indices by priorities as weights for the next minibatch"""

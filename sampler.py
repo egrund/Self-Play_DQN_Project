@@ -27,33 +27,27 @@ class Sampler:
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""
-
+        
         sarsd = []
         current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))
-        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])
-        
-        start = time.time()
+        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])       
         for e in range(10000):
+            
             available_actions = [env.available_actions for env in current_envs]
             available_actions_bool = [env.available_actions_mask for env in current_envs]
-
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
-
-            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info
-
+            
+            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info           
             # bring everything in the right order
             results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2]] for i in range(len(current_envs))] # state, action, reward, new state, done
-
             sarsd.extend(results)
-
+            
             observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
             current_envs = np.array([current_envs[i] for i in range(len(current_envs)) if not results[i][4]])
 
             # check if all envs are done
             if observations.shape == (0,):
-                
-                print(e," loops:", time.time()-start ,"\n","average time per loop: ", (time.time()-start)/e)
                 break
 
         # save data in buffer
@@ -84,7 +78,7 @@ class Sampler:
         shapes = [current_envs[i].shape[0] for i in range(2)]
 
         observations = [np.array([env.reset() for env in which_agent ]) for which_agent in current_envs]
-
+        #start = time.time()
         for e in range(10000):
             #print("E: ", e)
             #print("Shapes: ", shapes)
@@ -110,6 +104,7 @@ class Sampler:
 
             # check if all envs are done
             if all([observations[i].shape == (0,) for i in range(2)]):
+                #print(e," loops:", time.time()-start ,"\naverage time per loop: ", (time.time()-start)/e)
                 break
 
             # let them switch sides for the next turn

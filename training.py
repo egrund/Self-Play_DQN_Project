@@ -15,13 +15,17 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
     outer_time_100 = 0
     # create Sampler 
     old_agent = agent.copyAgent(env)
-    sampler = Sampler(BATCH_SIZE,agent = agent, opponent = RandomAgent())
-    sampler.fill_buffer(epsilon)
+    with tf.device("/CPU:0"):
+        sampler = Sampler(BATCH_SIZE,agent = agent, opponent = RandomAgent())
+        sampler.fill_buffer(epsilon)
+
     for i in tqdm.tqdm(range(iterations)):
         
         start = time.time()
+        
         # epsilon decay
-        epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
+        with tf.device("/CPU:0"):
+            epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
         loss = agent.train_inner_iteration(train_writer,i)
@@ -45,12 +49,16 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
             outer_time_100 = 0
 
         # new sampling + add to buffer
-        sampler_time = time.time()
         with tf.device("/CPU:0"):
+            sampler_time = time.time()
             sampler.set_opponent(old_agent)
             sampler.set_opponent_epsilon(epsilon)
+            print("set_opponents",time.time() - sampler_time)
+            sampler_time = time.time()
             _ = sampler.sample_from_game_wrapper(epsilon)
+            print("sampler_time",time.time() - sampler_time)
             sampler_time_100 += time.time() - sampler_time
+        #print("h")
         old_agent = agent.copyAgent(env)
 
         end = time.time()
@@ -62,7 +70,6 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
             tf.summary.scalar(f"time per iteration", end-start, step=i)
         outer_time_100 += time.time()-start
-        #print("\n")
 
 def train_adapting(agents, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9): # 
     # create Sampler 

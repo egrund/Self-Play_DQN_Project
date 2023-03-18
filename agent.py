@@ -46,7 +46,8 @@ class DQNAgent(Agent):
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
-        #start = time.time()
+        u_p = 0
+        
         for j in range(self.inner_iterations):
 
             # sample random minibatch of transitions
@@ -58,16 +59,19 @@ class DQNAgent(Agent):
             new_state = tf.convert_to_tensor([sample[3] for sample in minibatch],dtype = tf.float32)
             done = tf.convert_to_tensor([sample[4] for sample in minibatch],dtype = tf.float32)
             reward = self.reward_function(tf.cast(done, dtype = tf.bool), tf.convert_to_tensor([sample[2] for sample in minibatch],dtype = tf.float32))
-            
             loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 
+            
             # if prioritized experience replay, then here
             if self.prioritized_experience_replay:
                 TD_error = self.calc_td_error(state, actions, reward, new_state, done)
-                self.buffer.update_priorities(TD_error)
+                
+                with tf.device("/CPU:0"):
+                    t = time.time()
+                    self.buffer.update_priorities(TD_error)
+                    u_p += time.time() - t
 
-            
-        #print("inner_iteration_average per iteration: ", (time.time() - start)/self.inner_iterations)
+        print("update_priorities time: ", u_p)
 
         # polyak averaging
         self.target_model.set_weights(
@@ -116,7 +120,7 @@ class DQNAgent(Agent):
         # calculate best action
         return tf.argmax(probs, axis = -1)
     
-    @tf.function
+    @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done):
         """ Calculates the TD error for prioritized experience replay 
         

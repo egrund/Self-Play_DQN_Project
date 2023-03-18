@@ -46,10 +46,11 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
 
         # new sampling + add to buffer
         sampler_time = time.time()
-        sampler.set_opponent(old_agent)
-        sampler.set_opponent_epsilon(epsilon)
-        _ = sampler.sample_from_game_wrapper(epsilon)
-        sampler_time_100 += time.time() - sampler_time
+        with tf.device("/CPU:0"):
+            sampler.set_opponent(old_agent)
+            sampler.set_opponent_epsilon(epsilon)
+            _ = sampler.sample_from_game_wrapper(epsilon)
+            sampler_time_100 += time.time() - sampler_time
         old_agent = agent.copyAgent(env)
 
         end = time.time()

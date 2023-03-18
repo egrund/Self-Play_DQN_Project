@@ -27,12 +27,12 @@ class Sampler:
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""
-        start = time.time()
+
         sarsd = []
         current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))
         observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])
-        print("\nSampler: \n time before loop: ", time.time()-start )
+        
         start = time.time()
         for e in range(10000):
             available_actions = [env.available_actions for env in current_envs]
@@ -55,12 +55,12 @@ class Sampler:
                 
                 print(e," loops:", time.time()-start ,"\n","average time per loop: ", (time.time()-start)/e)
                 break
-        start = time.time()
+
         # save data in buffer
         if save:
             self.agent.buffer.extend(sarsd)
             
-        print("Save in Buffer: ", time.time()-start,"\n")
+      
 
         # render for debugging or playing
         # [e.render() for e in self.envs]

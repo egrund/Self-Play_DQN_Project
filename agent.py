@@ -12,7 +12,7 @@ class Agent:
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True):
 
         # create an initialize model and target_model
         self.model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation)
@@ -30,6 +30,7 @@ class DQNAgent(Agent):
         self.buffer = buffer
         self.batch = batch 
         self.reward_function = reward_function
+        self.prioritized_experience_replay = prioritized_experience_replay
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
@@ -49,6 +50,10 @@ class DQNAgent(Agent):
             loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
 
             # if prioritized experience replay, then here
+            if self.prioritized_experience_replay:
+                TD_error = self.calc_td_error(state, actions, reward, new_state, done)
+                self.buffer.update_priorities(TD_error)
+
             
         #print("inner_iteration_average per iteration: ", (time.time() - start)/self.inner_iterations)
 
@@ -99,6 +104,30 @@ class DQNAgent(Agent):
         # calculate best action
         return tf.argmax(probs, axis = -1)
     
+    @tf.function
+    def calc_td_error(self, state, action, reward, new_state, done):
+        """ Calculates the TD error for prioritized experience replay 
+        
+        Parameters:
+            state (tf.Tensor): current state
+            action (tf.Tensor): action that was chosen
+            reward (tf.Tensor): reward that was given
+            new_state (tf.Tensor): the next state that occured    
+            done (tf.Tensor): whether the game was finished after this action      
+        """
+
+        old_Q = tf.gather(self.model(state,training=False),tf.cast(action,dtype=tf.int32),batch_dims=1)
+
+        # if the game is done, we cannot do another move
+        # especially if we did the winning action the newly received state is in the perspective of the opponent. 
+        if not done:
+            new_action = tf.argmax(self.model(new_state,training = False),axis = -1)
+            new_Q = tf.gather(self.target_model(state,training = False), new_action, batch_dims = 1)
+        else:
+            new_Q = tf.constant(0)
+
+        return tf.abs(reward + tf.constant(0.99) * new_Q - old_Q)
+    
     def save_models(self, i):
         """ saves the model and the target model using i as iteration count """
 
@@ -139,7 +168,7 @@ class RandomAgent (Agent):
         return tf.convert_to_tensor(random_actions) 
     
     
-class MinMax_Agent:
+class MinMax_Agent (Agent):
     """ 
         selects an action using the model and an min max policy 
         

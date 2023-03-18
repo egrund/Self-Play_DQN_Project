@@ -41,7 +41,7 @@ class Sampler:
             results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info
 
             # bring everything in the right order
-            results = [(observations[i],actions[i],results[i][1],results[i][0],results[i][2]) for i in range(len(current_envs))] # state, action, reward, new state, done
+            results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2]] for i in range(len(current_envs))] # state, action, reward, new state, done
 
             sarsd.extend(results)
 

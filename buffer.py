@@ -1,7 +1,6 @@
 import random as rnd
 import numpy as np
-from itertools import chain
-
+import time
 class Buffer:
     """ 
     Implemens a replay buffer for our DQNAgent class. Can use prioritized experience replay. 
@@ -12,7 +11,7 @@ class Buffer:
         self.min_size = min_size
         self.current_size = 0
         self.sarsd_list = []
-        self.priorities = []
+        self.priorities = np.array([])
         self.last_indices = None
         self.empty = True # is False after adding data the first time
 
@@ -31,34 +30,45 @@ class Buffer:
         none
         ______________
         """
-
         # if there is data to add, buffer is not empty anymore
+        p = False
+        a_time = 0
+        b_time = 0
+        c_time = 0
+        d_time = 0
+        e_time = 0
+        
         if sarsd: 
             self.empty = False
-
-        priority_sorted = sorted(self.priorities, reverse=True)
-
+ 
         # first element is supposed to have max priority
-        max_priority = priority_sorted[0] if priority_sorted else 1
-
+        if(np.any(self.priorities)):
+            max_priority = np.amax(self.priorities)
+        else:
+            max_priority = 1
+            
         #extend till the capacity is reached
         for sample in sarsd:
-            
+
             if(self.current_size < self.capacity):
                 self.sarsd_list.insert(0,sample)
-                self.priorities.insert(0,max_priority)
-                priority_sorted.insert(0,max_priority)
+                self.priorities = np.insert(self.priorities,0,max_priority)
                 self.current_size += 1          
                 # no sorting needed as max still in front
             else:
+                p = True
                 # remove lowest data
-                idx = self.priorities.index(priority_sorted[-1])
+                t = time.time()
+                idx = np.argmin(self.priorities)               
+                a_time += time.time() - t
+                t = time.time()
                 self.sarsd_list[idx] = sample
+                b_time += time.time() - t
+                t = time.time()
                 self.priorities[idx] = max_priority
-                priority_sorted[-1] = max_priority
-                # in case rather sort new that use index -2, as the two values could be the same and we could remove our new sample
-                priority_sorted.sort(reverse=True)
+                c_time += time.time() - t                
 
+                
     def sample_minibatch(self, batch_size):
         """ samples a minibatch from the buffer """
         """
@@ -88,18 +98,14 @@ class Buffer:
 
     def update_priorities(self,priorities):
         """ Updates the priorities for the last given minibatch in order. """
-        
+
         if self.empty:
             raise RuntimeError("The buffer has to be filled to update.")
         if self.last_indices == None:
             raise RuntimeError("You need to sample from the buffer before you can update priorities.")
-        
+
         for i,p in zip(self.last_indices,priorities): 
             self.priorities[i] = p
-            
-            
-        #
-            #print zip(chain(*a),chain(*b))
 
     def get_minibatch_indices(self,batch_size):
         """ returns random indices by priorities as weights for the next minibatch"""

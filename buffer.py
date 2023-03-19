@@ -31,12 +31,6 @@ class Buffer:
         ______________
         """
         # if there is data to add, buffer is not empty anymore
-        p = False
-        a_time = 0
-        b_time = 0
-        c_time = 0
-        d_time = 0
-        e_time = 0
         
         if sarsd: 
             self.empty = False
@@ -56,17 +50,11 @@ class Buffer:
                 self.current_size += 1          
                 # no sorting needed as max still in front
             else:
-                p = True
                 # remove lowest data
-                t = time.time()
                 idx = np.argmin(self.priorities)               
-                a_time += time.time() - t
-                t = time.time()
                 self.sarsd_list[idx] = sample
-                b_time += time.time() - t
-                t = time.time()
                 self.priorities[idx] = max_priority
-                c_time += time.time() - t                
+            
 
                 
     def sample_minibatch(self, batch_size):

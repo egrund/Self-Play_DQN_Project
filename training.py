@@ -36,8 +36,8 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
             agent.save_models(i)
             unique, percentage = testing(agent, size = 100, printing=True)[0]
             with train_writer.as_default(): # TODO loss writer
-                for value in unique:
-                    tf.summary.scalar(f"reward {value}: ", percentage[value], step=i)
+                for i,value in enumerate(unique):
+                    tf.summary.scalar(f"reward {value}: ", percentage[i], step=i)
                 
             #prints to get times every 100 iterations
             print("Loss ",i,": ", loss.numpy(), "\n")

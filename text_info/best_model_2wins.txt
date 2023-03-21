@@ -2,6 +2,11 @@ env:
 ***
 ConnectFourEnv2Wins
 
+++++++++++++++++++++++
+20230321-140558
+++++++++++++++++++++++
+
+
 model architecture: 
 ******************
 - 1 Block 2 layers 64 filters 4x4

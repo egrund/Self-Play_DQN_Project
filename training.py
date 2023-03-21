@@ -1,14 +1,14 @@
 from sampler import Sampler
 from testing import testing
 from agent import RandomAgent
-from env_wrapper import ConnectFourSelfPLay
+from env_wrapper import SelfPLayWrapper
 from keras_gym_env import ConnectFourEnv
 import tensorflow as tf
 import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = ConnectFourSelfPLay(ConnectFourEnv())): # 
+def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = SelfPLayWrapper(ConnectFourEnv())):
     """ """
     sampler_time_100 = 0
     inner_time_100 = 0

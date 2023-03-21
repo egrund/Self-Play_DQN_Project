@@ -1,4 +1,4 @@
-from env_wrapper import ConnectFourSelfPLay
+from env_wrapper import SelfPLayWrapper
 from agent import Agent
 import numpy as np
 import time
@@ -15,7 +15,7 @@ class Sampler:
 
     def __init__(self,batch,agent, opponent : Agent ,opponent_epsilon : float = 0):
 
-        self.envs = [ConnectFourSelfPLay(opponent,opponent_epsilon) for _ in range(batch)]
+        self.envs = [SelfPLayWrapper(opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
 

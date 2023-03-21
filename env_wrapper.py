@@ -2,12 +2,14 @@ from keras_gym_env import ConnectFourEnv as GameEnv
 from agent import Agent
 import tensorflow as tf
 
-class ConnectFourSelfPLay(GameEnv):
+class SelfPLayWrapper(GameEnv):
 
     """ A Wrapper for ConnectFourEnv of keras-gym (adapted to a newer python version)
+    also works for similar other envs
     
-    env (ConnectFourEnv)
-    opponent (Agent): has to be an agent
+    Attributes: 
+        opponent (Agent): has to be an agent
+        epsilon (float): the epsilon value for the epsilon greedy policy
     """
 
     def __init__(self,opponent : Agent = None,epsilon : float = 0):
@@ -27,7 +29,7 @@ class ConnectFourSelfPLay(GameEnv):
         # get the opponent's action
         o_action = self.opponent.select_action_epsilon_greedy(self.epsilon, tf.expand_dims(s_0, axis = 0), [self.available_actions], [self.available_actions_mask])[0]
         # do the opponent's action
-        s_1,_,_,_ = super().step(o_action)
+        s_1,_,_ = super().step(o_action)
         return tf.cast(s_1, dtype=tf.float32)
     
     def step(self,a): 

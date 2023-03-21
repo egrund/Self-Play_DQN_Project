@@ -1,4 +1,4 @@
-from env_wrapper import ConnectFourSelfPLay
+from env_wrapper import SelfPLayWrapper
 
 import numpy as np
 import datetime
@@ -42,7 +42,7 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
 #env = ConnectFourEnv()
-env = ConnectFourSelfPLay()
+env = SelfPLayWrapper()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
 train_self_play_best(best_agent, BATCH_SIZE, iterations, best_train_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,env = env)

@@ -1,0 +1,22 @@
+env: 
+***
+ConnectFourEnv2Wins
+
+model architecture: 
+******************
+- 1 Block 2 layers 64 filters 4x4
+- dense 64
+- output 7
+
+Hyperparameters:
+***************
+iterations = 5000  # only did 500
+INNER_ITS = 50
+BATCH_SIZE = 512
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.995
+POLYAK = 0.9
+dropout_rate = 0.2
+normalisation = True
+best_buffer = Buffer(capacity = 100000,min_size = 5000)

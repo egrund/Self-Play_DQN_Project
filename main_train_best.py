@@ -39,7 +39,7 @@ epsilon = 1
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.995
 POLYAK = 0.9
-dropout_rate = 0.2, 
+dropout_rate = 0.2
 normalisation = True
 
 # create buffer

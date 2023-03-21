@@ -95,7 +95,7 @@ class ConnectFourEnvNoVertical(Env):
          [0, 0, 0, 0],
          [0, 0, 0, 0],
          [0, 0, 0, 0]]
-    ], dtype='uint8')
+    ], dtype='uint8') # CHANGE : removed the vertical filters
 
     def __init__(self):
         self._init_state()

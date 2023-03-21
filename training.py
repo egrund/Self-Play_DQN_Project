@@ -32,7 +32,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test
         inner_time_100 += time.time() - start
         
         # save model
-        if i % 50 == 0:
+        if i % 20 == 0:
             agent.save_models(i)
 
             # testing and save test results in logs

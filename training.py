@@ -32,12 +32,12 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test
         inner_time_100 += time.time() - start
         
         # save model
-        if i % 100 == 0:
+        if i % 50 == 0:
             agent.save_models(i)
 
             # testing and save test results in logs
             unique, percentage = testing(agent, size = 100, printing=True)[0]
-            with test_writer.as_default(): # TODO loss writer
+            with test_writer.as_default(): 
                 for j,value in enumerate(unique):
                     tf.summary.scalar(f"reward {value}: ", percentage[j], step=i)
                 

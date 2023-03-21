@@ -2,12 +2,15 @@ from keras_gym_env import ConnectFourEnv
 import numpy as np
 import datetime
 import tensorflow as tf
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from agent import DQNAgent, RandomAgent
 from buffer import Buffer
 from sampler import Sampler
 
-def testing(agent, size = 100, printing = True, load = None):
+def testing(agent, size = 100, printing = True, load = None, plot = False):
     """ tests the given agent against a random agent
     
     Parameters: 
@@ -53,6 +56,12 @@ def testing(agent, size = 100, printing = True, load = None):
                 print("Best Agent testing:")
             for i,value in enumerate(unique):
                 print(f" reward {value}: {counts[i]} percent")
+
+    if plot:
+        rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
+        rewards_df = pd.DataFrame(rewards_dict,index=range(start,stop,step))
+        sns.lineplot(rewards_df,palette="tab10", linewidth=2.5)
+        plt.show()
 
     return rewards
 

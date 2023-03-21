@@ -1,8 +1,8 @@
-from keras_gym_env import ConnectFourEnv
+from keras_gym_env import ConnectFourEnv as GameEnv
 from agent import Agent
 import tensorflow as tf
 
-class ConnectFourSelfPLay(ConnectFourEnv):
+class ConnectFourSelfPLay(GameEnv):
 
     """ A Wrapper for ConnectFourEnv of keras-gym (adapted to a newer python version)
     
@@ -11,7 +11,7 @@ class ConnectFourSelfPLay(ConnectFourEnv):
     """
 
     def __init__(self,opponent : Agent = None,epsilon : float = 0):
-        super(ConnectFourEnv, self).__init__()
+        super(GameEnv, self).__init__()
         self.opponent = opponent
         self.epsilon = epsilon
 

@@ -59,8 +59,8 @@ class Sampler:
         # render for debugging or playing
         # [e.render() for e in self.envs]
 
-        # return averade reward for the agent
-        return np.mean([sample[2] for sample in sarsd],dtype=object)
+        # return rewards for the agent
+        return [sample[2] for sample in sarsd]
 
   
     def sample_from_game(self,epsilon, save = True):

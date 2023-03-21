@@ -30,12 +30,17 @@ def testing(agent, size = 100, printing = True, load = None):
         if load:
             agent.load_models(i)
         reward = sampler.sample_from_game_wrapper(0.0,save = False)
-        rewards.append(reward)
+
+        unique, counts = np.unique(reward, return_counts=True)
+        [counts.update({value:counts[value]/size * 100}) for value in unique]
+        rewards.append((unique, counts))
         if printing:
             if load:
-                print(f"Best Agent {i} average reward: {reward}")
+                print(f"Best Agent {i} testing:")
             else:
-                print(f"Best Agent average reward: {reward}")
+                print("Best Agent testing:")
+            for value in unique:
+                print(f" reward {value}: {counts[value]} percent")
 
     return rewards
 

@@ -198,7 +198,7 @@ class ConnectFourEnv(Env):
 
         # run logic
         self.done, reward = self._done_reward(a)
-        return self.state, reward, self.done, {'state_id': self.state_id}
+        return self.state, reward, self.done#, {'state_id': self.state_id}
 
 
     def render(self, *args, **kwargs):

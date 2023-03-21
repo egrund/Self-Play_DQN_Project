@@ -91,9 +91,11 @@ class Buffer:
             raise RuntimeError("The buffer has to be filled to update.")
         if self.last_indices == None:
             raise RuntimeError("You need to sample from the buffer before you can update priorities.")
+            
+        np.put(self.priorities,self.last_indices,priorities)
 
-        for i,p in zip(self.last_indices,priorities): 
-            self.priorities[i] = p
+        #for i,p in zip(self.last_indices,priorities): 
+        #    self.priorities[i] = p
 
     def get_minibatch_indices(self,batch_size):
         """ returns random indices by priorities as weights for the next minibatch"""
@@ -108,5 +110,5 @@ class Buffer:
             raise RuntimeError("The buffer has to be filled to normalize priorities.")
         
         priorities = np.power(np.array(self.priorities),0.3)
-        self.priorities = list(priorities/(np.sum(priorities)+1))
+        self.priorities = priorities/(np.sum(priorities)+1)
 

@@ -21,7 +21,7 @@ __all__ = (
 )
 
 
-class ConnectFourEnv(Env):
+class ConnectFourEnvNoVertical(Env):
     """
     An adversarial environment for playing the `Connect-Four game
     <https://en.wikipedia.org/wiki/Connect_Four>`_.

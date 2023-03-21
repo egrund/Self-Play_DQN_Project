@@ -28,7 +28,7 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ######################################################################
 ***
-ConnectFourEnv2Wins, but bugged, so only in left upper area
+ConnectFourEnv2Wins
 
 ++++++++++++++++++++++
 best_agent_test_2wins

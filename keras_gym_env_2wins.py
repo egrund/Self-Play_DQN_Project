@@ -279,9 +279,9 @@ class ConnectFourEnv2Wins(Env):
         self._levels[a] -= 1
 
         s = self._state == self._players[0]
-        for i0 in range(2, -1, -1):
+        for i0 in range(4, -1, -1):
             i1 = i0 + 2
-            for j0 in range(2):
+            for j0 in range(6):
                 j1 = j0 + 2
                 if np.any(np.tensordot(self.filters, s[i0:i1, j0:j1]) == 2):
                     return True, 1.0

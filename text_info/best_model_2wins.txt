@@ -1,6 +1,6 @@
 env: 
 ***
-ConnectFourEnv2Wins
+ConnectFourEnv2Wins, but bugged, so only in left upper area
 
 ++++++++++++++++++++++
 20230321-140558

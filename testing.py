@@ -38,7 +38,7 @@ def testing(agent, size = 100, printing = True, load = None, plot = False):
 
         # if not all rewards are in reward, add the rest with count 0
         if unique.shape[0] != 3: 
-            all = [-1.0,0.0,1.0]
+            all = [-1,0,1]
             for a in all:
                 if not a in unique:
                     counts = np.insert(counts,a+1,0)

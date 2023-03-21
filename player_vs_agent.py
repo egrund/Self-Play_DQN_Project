@@ -1,4 +1,4 @@
-from env_wrapper import ConnectFourSelfPLay
+from env_wrapper import SelfPLayWrapper
 
 import numpy as np
 import datetime
@@ -12,17 +12,15 @@ from training import train_self_play_best
 
 # seeds
 seed = 42
-np.random.seed(seed)
-rnd.seed(seed)
+#np.random.seed(seed)
+#rnd.seed(seed) # otherwise always the same player starts
+#tf.random.set_seed(seed)
 
 #Subfolder for Logs
-config_name = "best_agent"
+config_name = "best_agent_test_2wins"
 #createsummary writer for vusalization in tensorboard    
-time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# time_string = ""
+time_string = "20230321-190059"
 
-best_train_path = f"logs/{config_name}/{time_string}/best_train"
-best_train_writer = tf.summary.create_file_writer(best_train_path)
 model_path_best = f"model/{config_name}/{time_string}/best"
 
 # Hyperparameter
@@ -37,35 +35,46 @@ POLYAK = 0.9
 dropout_rate = 0.2, 
 normalisation = True
 
+# playing hyperparameter
+index = 480
+
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
-env = ConnectFourSelfPLay()
+env = SelfPLayWrapper()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
-best_agent.load_models(0)
+best_agent.load_models(index)
 env.set_opponent(best_agent)
 
 env.reset()
 
-player = 0
+player = rnd.randint(0,1) 
 done=False
+
+print("Start Player ", player)
+if player: # if opponent starts
+    env.opponent_starts()
+env.render()
+
 while(True):
 
-    print("Turn Player ", player)
-    #print(state)
-    if not player:
+    print("Your turn ")
+
+    # choose action
+    input_action = int(input())
+    while(input_action not in env.available_actions):
+        print("This action is not valid. Please try again. ")
         input_action = int(input())
-    else:  
-        
-        state, r, done, info = env.step(input_action)
-        env.render()
+    
+    # do step, opponent is done automatically inside
+    state, r, done = env.step(input_action)
+    env.render()
     
     if(done):
-        print("Player ", player, " wins") if r == 1 else print("Draw")
-        env.render()
-        #print(state)
+        end = "won" if r==1 else "lost"
+        print("You ", end) if r != 0 else print("Draw")
         break
 
     player = int(not player)

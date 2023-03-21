@@ -27,6 +27,9 @@ class Sampler:
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""
+
+        steps_list = 0
+        tidy_list = 0
         
         sarsd = []
         current_envs = self.envs
@@ -38,9 +41,16 @@ class Sampler:
             available_actions_bool = [env.available_actions_mask for env in current_envs]
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
             
-            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info           
+            sa = time.time()
+            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info     
+            so = time.time()
+            steps_list += so-sa
             # bring everything in the right order
+            sa = time.time()
             results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2]] for i in range(len(current_envs))] # state, action, reward, new state, done
+            so = time.time()
+            tidy_list+= so-sa
+
             sarsd.extend(results)
             
             observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
@@ -48,11 +58,18 @@ class Sampler:
 
             # check if all envs are done
             if observations.shape == (0,):
+                print("Average step time: ", steps_list/(e+1))
+                print("Average time change oder: ", tidy_list/(e+1))
                 break
 
         # save data in buffer
         if save:
+            sa = time.time()
             self.agent.buffer.extend(sarsd)
+            so = time.time()
+            print("Saving in buffer time: ", so-sa)
+
+
             
       
 

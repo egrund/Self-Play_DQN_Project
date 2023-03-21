@@ -23,6 +23,10 @@ time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 best_train_path = f"logs/{config_name}/{time_string}/best_train"
 best_train_writer = tf.summary.create_file_writer(best_train_path)
+
+best_test_path = f"logs/{config_name}/{time_string}/best_test"
+best_test_writer = tf.summary.create_file_writer(best_test_path)
+
 model_path_best = f"model/{config_name}/{time_string}/best"
 
 # Hyperparameter
@@ -45,7 +49,7 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 env = SelfPLayWrapper()
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
-train_self_play_best(best_agent, BATCH_SIZE, iterations, best_train_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,env = env)
+train_self_play_best(best_agent, BATCH_SIZE, iterations, best_train_writer, best_test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,env = env)
 
 
 print("done")

@@ -71,7 +71,7 @@ class DQNAgent(Agent):
                     self.buffer.update_priorities(TD_error)
                     u_p += time.time() - t
 
-        print("update_priorities time: ", u_p)
+        #print("update_priorities time: ", u_p)
 
         # polyak averaging
         self.target_model.set_weights(

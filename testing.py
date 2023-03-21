@@ -59,6 +59,7 @@ def testing(agent, size = 100, printing = True, load = None, plot = False):
 
     if plot:
         rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
+        # next two lines: https://seaborn.pydata.org/examples/wide_data_lineplot.html
         rewards_df = pd.DataFrame(rewards_dict,index=range(start,stop,step))
         sns.lineplot(rewards_df,palette="tab10", linewidth=2.5)
         plt.show()

@@ -8,7 +8,7 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = SelfPLayWrapper(ConnectFourEnv())):
+def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = SelfPLayWrapper(ConnectFourEnv())):
     """ """
     sampler_time_100 = 0
     inner_time_100 = 0
@@ -37,7 +37,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, epsi
 
             # testing and save test results in logs
             unique, percentage = testing(agent, size = 100, printing=True)[0]
-            with train_writer.as_default(): # TODO loss writer
+            with test_writer.as_default(): # TODO loss writer
                 for j,value in enumerate(unique):
                     tf.summary.scalar(f"reward {value}: ", percentage[j], step=i)
                 

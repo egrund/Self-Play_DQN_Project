@@ -14,7 +14,7 @@ from training import train_self_play_best
 seed = 42
 np.random.seed(seed)
 rnd.seed(seed)
-tf.random.set_seed(42)
+tf.random.set_seed(seed)
 
 #Subfolder for Logs
 config_name = "best_agent_test_2wins"

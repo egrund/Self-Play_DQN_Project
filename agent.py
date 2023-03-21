@@ -67,9 +67,9 @@ class DQNAgent(Agent):
                 TD_error = self.calc_td_error(state, actions, reward, new_state, done)
                 
                 with tf.device("/CPU:0"):
-                    t = time.time()
+                    #t = time.time()
                     self.buffer.update_priorities(TD_error)
-                    u_p += time.time() - t
+                    #u_p += time.time() - t
 
         #print("update_priorities time: ", u_p)
 

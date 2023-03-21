@@ -5,7 +5,6 @@ import datetime
 import tensorflow as tf
 import random as rnd
 
-
 from agent import DQNAgent
 from buffer import Buffer
 from training import train_self_play_best
@@ -17,7 +16,7 @@ rnd.seed(seed)
 tf.random.set_seed(seed)
 
 #Subfolder for Logs
-config_name = "best_agent_test_2wins"
+config_name = "best_agent_test_no_vertical"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""

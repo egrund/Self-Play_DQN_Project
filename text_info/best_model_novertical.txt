@@ -14,7 +14,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 500  # only did
+iterations = 500  # only did all until it was 499
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1
@@ -53,7 +53,7 @@ normalisation = True
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-hier einfügen
+20230322-001817 best_model_no_vertical
 ++++++++++++++++++++++
 
 env: 

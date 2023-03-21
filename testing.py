@@ -41,8 +41,8 @@ def testing(agent, size = 100, printing = True, load = None, plot = False):
             all = [-1.0,0.0,1.0]
             for a in all:
                 if not a in unique:
-                    counts.insert(a+1,0)
-                    unique.insert(a+1,a)
+                    counts = np.insert(counts,a+1,0)
+                    unique = np.insert(unique,a+1,a)
         
         # count 0 from how many 1 and -1
         counts[1] = size - counts[0] - counts[2]

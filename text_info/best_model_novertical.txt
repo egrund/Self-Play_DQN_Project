@@ -1,5 +1,5 @@
 ++++++++++++++++++++++
-20230321-190059
+20230321-190059 best_model2_wins at the moment
 ++++++++++++++++++++++
 
 env: 
@@ -20,6 +20,60 @@ BATCH_SIZE = 512
 epsilon = 1
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.99
+POLYAK = 0.9
+dropout_rate = 0.2
+normalisation = True
+best_buffer = Buffer(capacity = 100000,min_size = 5000)
+
+++++++++++++++++++++++
+hier einfügen
+++++++++++++++++++++++
+
+env: 
+***
+ConnectFourNoVertical
+
+model architecture: 
+******************
+- 1 Block 2 layers 128 filters 4x4
+- dense 64, 64
+- output 7
+
+Hyperparameters:
+***************
+iterations = 5001  # only did
+INNER_ITS = 50
+BATCH_SIZE = 512
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.996
+POLYAK = 0.9
+dropout_rate = 0.2
+normalisation = True
+best_buffer = Buffer(capacity = 100000,min_size = 5000)
+
+++++++++++++++++++++++
+hier einfügen
+++++++++++++++++++++++
+
+env: 
+***
+ConnectFourNoVertical
+
+model architecture: 
+******************
+- 1 Block 1 layers 512 filters 4x4
+- dense 64, 64
+- output 7
+
+Hyperparameters:
+***************
+iterations = 5001  # only did
+INNER_ITS = 50
+BATCH_SIZE = 512
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.996
 POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True

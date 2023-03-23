@@ -99,7 +99,7 @@ model architecture: 2 agents! they do not sample against each other!
 
 Hyperparameters:
 ***************
-iterations = 10001  # only did 
+iterations = 10001  # only did 2315
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1

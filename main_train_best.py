@@ -30,12 +30,12 @@ BATCH_SIZE = 512
 #reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.997
+EPSILON_DECAY = 0.998
 POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
 SAMPLING = 2
-AGENT_NUMBER = 3 # how many agents will play against each other while training
+AGENT_NUMBER = 2 # how many agents will play against each other while training
 
 #Subfolder for Logs
 config_name = "test"

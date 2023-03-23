@@ -67,13 +67,14 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
 
 if __name__ == "__main__":
     from keras_gym_env import ConnectFourEnv
+    from tiktaktoe_env import TikTakToeEnv
 
     # hyperparameter for testing
-    AV = 10 # how many games to play for each model to test
+    AV = 10000 # how many games to play for each model to test
 
     # create agent
     best_agent = RandomAgent() # DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
 
-    rewards = testing(best_agent, ConnectFourEnv, AV, printing = True)
+    rewards = testing(best_agent, TikTakToeEnv, AV, printing = True)
 
     print("done")

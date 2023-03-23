@@ -1,4 +1,7 @@
-from env_wrapper import SelfPLayWrapper
+from env_wrapper2 import SelfPLayWrapper
+
+# decide env
+from tiktaktoe_env import TikTakToeEnv as GameEnv
 
 import numpy as np
 import datetime
@@ -16,10 +19,9 @@ seed = 42
 #rnd.seed(seed) # otherwise always the same player starts
 #tf.random.set_seed(seed)
 
-#Subfolder for Logs
-config_name = "best_agent_test_2wins"
-#createsummary writer for vusalization in tensorboard    
-time_string = "20230321-190059"
+#Subfolder from model
+config_name = "best_agent_tiktaktoe_opponent_no_epsilon"
+time_string = "20230323-150141"
 
 model_path_best = f"model/{config_name}/{time_string}/best"
 
@@ -36,13 +38,13 @@ dropout_rate = 0.2,
 normalisation = True
 
 # playing hyperparameter
-index = 480
+index = 2840
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
-env = SelfPLayWrapper()
+env = SelfPLayWrapper(GameEnv)
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
 best_agent.load_models(index)

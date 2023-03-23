@@ -4,7 +4,8 @@ import datetime
 import tensorflow as tf
 import random as rnd
 
-from env_wrapper import SelfPLayWrapper
+from env_wrapper2 import SelfPLayWrapper
+from tiktaktoe_env import TikTakToeEnv
 from agent import DQNAgent
 from buffer import Buffer
 from training import train_self_play_best
@@ -17,9 +18,9 @@ np.random.seed(seed)
 rnd.seed(seed)
 tf.random.set_seed(seed)
 
-#Subfolder for Logs & model
-config_name = "best_agent_test_2wins"
-time_string = "20230321-140558"
+#Subfolder from model
+config_name = "best_agent_tiktaktoe_opponent_no_epsilon"
+time_string = "20230323-150141"
 best_train_path = f"logs/{config_name}/{time_string}/best_train"
 model_path_best = f"model/{config_name}/{time_string}/best"
 
@@ -40,14 +41,14 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
 #env = ConnectFourEnv()
-env = SelfPLayWrapper()
+env = SelfPLayWrapper(TikTakToeEnv)
 best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
 # Testing Hyperparameter
-AV = 1000 # how many games to play for each model to test
+AV = 10000 # how many games to play for each model to test
 # from which iterations to load the models
-LOAD = (0,500+1,100) # start,stop,step
+LOAD = (,500+1,100) # start,stop,step
 
-rewards = testing(best_agent,size=AV,load = LOAD,plot=True)
+rewards = testing(best_agent,TikTakToeEnv, size=AV,load = LOAD,plot=True)
 
 print("done")

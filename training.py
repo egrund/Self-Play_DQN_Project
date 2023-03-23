@@ -55,7 +55,7 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
         with tf.device("/CPU:0"):
             #sampler_time = time.time()
             sampler.set_opponent(old_agent)
-            sampler.set_opponent_epsilon(epsilon)
+            #sampler.set_opponent_epsilon(epsilon)
             #print("set_opponents",time.time() - sampler_time)
             sampler_time = time.time()
             _ = [sampler.sample_from_game_wrapper(epsilon) for _ in range(sampling)]

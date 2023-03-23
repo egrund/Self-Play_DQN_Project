@@ -1,4 +1,5 @@
 from tiktaktoe_env import TikTakToeEnv
+import numpy as np
 
 env = TikTakToeEnv()
 
@@ -9,7 +10,6 @@ while(True):
 
     print("Turn Player ", player)
     env.render()
-    #print(state[:,:,0])
 
     input_action = int(input())
 
@@ -18,7 +18,6 @@ while(True):
     if(done):
         print("Player ", player, " wins") if r == 1 else print("Draw")
         env.render()
-        #print(state)
         break
 
     player = int(not player)

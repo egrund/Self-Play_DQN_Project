@@ -7,16 +7,19 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1):
+def train_self_play_best(agents : list, env_class, BATCH_SIZE, iterations : int, train_writer : list, test_writer : list, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1):
     """ """
-    sampler_time_100 = 0
-    inner_time_100 = 0
-    outer_time_100 = 0
+    sampler_time = 0
+    inner_time = 0
+    outer_time = 0
     # create Sampler 
-    old_agent = agent.copyAgent(SelfPLayWrapper(env_class))
+    old_agents = [agent.copyAgent(SelfPLayWrapper(env_class)) for agent in agents]
+    dist_opponent = 0
+
+
     with tf.device("/CPU:0"):
-        sampler = Sampler(BATCH_SIZE,agent = agent, env_class= env_class, opponent = RandomAgent())
-        sampler.fill_buffer(epsilon)
+        sampler = [Sampler(BATCH_SIZE,agent = agent, env_class= env_class, opponent = RandomAgent()) for agent in agents]
+        [s.fill_buffer(epsilon) for s in sampler]
 
     for i in tqdm.tqdm(range(iterations)):
         
@@ -27,42 +30,45 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
             epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
-        loss = agent.train_inner_iteration(train_writer,i)
-        inner_time_100 += time.time() - start
+        losses = [agent.train_inner_iteration(train_writer[j],i) for j,agent in enumerate(agents)]
+        inner_time += time.time() - start
         
         # save model
         d = 20
         if i % d == 0:
-            agent.save_models(i)
+            [agent.save_models(i) for agent in agents]
 
             # testing and save test results in logs
-            unique, percentage = testing(agent, env_class = env_class, size = 100, printing=True)[0]
-            with test_writer.as_default(): 
-                for j,value in enumerate(unique):
-                    tf.summary.scalar(f"reward {value}: ", percentage[j], step=i)
+            results = [testing(agent, env_class = env_class, size = 100, printing=True)[0] for agent in agents] # unique, percentage
+            for ai in range(len(agents)):
+                with test_writer[ai].as_default(): 
+                    for j,value in enumerate(results[ai][0]):
+                        tf.summary.scalar(f"reward {value}: ", results[ai][1], step=i)
                 
-            #prints to get times every 100 iterations
-            print("Loss ",i,": ", loss.numpy(), "\n")
-            print("inner_iteration_average last 100 iterations: ", inner_time_100/d)             
-            print("outer_iteration_average last 100 iterations: ", outer_time_100/d)
-            print("Average_Sampling_Time last 100 iterations: ", sampler_time_100/d , "\n") 
+                #prints to get times every 100 iterations
+                print(f"\nResults Agent {j}")
+                print(f"Loss {i}: ", losses[j].numpy(), "\n")
+            print(f"\ninner_iteration_average last {d} iterations: ", inner_time/d)             
+            print(f"outer_iteration_average last {d} iterations: ", outer_time/d)
+            print(f"Average_Sampling_Time last {d} iterations: ", sampler_time/d , "\n") 
             
-            inner_time_100 = 0
-            sampler_time_100 = 0
-            outer_time_100 = 0
+            inner_time = 0
+            sampler_time = 0
+            outer_time = 0
 
         # new sampling + add to buffer
         with tf.device("/CPU:0"):
             #sampler_time = time.time()
-            sampler.set_opponent(old_agent)
-            #sampler.set_opponent_epsilon(epsilon)
+            [sampler[j].set_opponent(old_agents[int((j+dist_opponent)%len(agents))]) for j in range(len(agents))]
+            dist_opponent = dist_opponent + 1 if dist_opponent < len(agents) -1 else 0
+            [s.set_opponent_epsilon(epsilon/2) for s in sampler]
             #print("set_opponents",time.time() - sampler_time)
-            sampler_time = time.time()
-            _ = [sampler.sample_from_game_wrapper(epsilon) for _ in range(sampling)]
+            sampler_start = time.time()
+            _ = [[s.sample_from_game_wrapper(epsilon) for _ in range(sampling)] for s in sampler]
             #print("sampler_time",time.time() - sampler_time)
-            sampler_time_100 += time.time() - sampler_time
+            sampler_time += time.time() - sampler_start
         #print("h")
-        old_agent = agent.copyAgent(SelfPLayWrapper(env_class))
+        old_agents = [agent.copyAgent(SelfPLayWrapper(env_class)) for agent in agents]
 
         end = time.time()
 
@@ -72,4 +78,4 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
         with train_writer.as_default():
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
             tf.summary.scalar(f"time per iteration", end-start, step=i)
-        outer_time_100 += time.time()-start
+        outer_time += time.time()-start

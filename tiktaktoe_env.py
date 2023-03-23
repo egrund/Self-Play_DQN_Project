@@ -199,7 +199,7 @@ class TikTakToeEnv(Env):
         #board += "  \n"
         board += hrule
         s = np.reshape(self._state,(self.num_rows, self.num_cols))
-        a = np.reshape(np.linspace(0,8,9),(self.num_rows, self.num_cols))
+        a = np.reshape(np.linspace(0,self.action_space.n -1,self.action_space.n),(self.num_rows, self.num_cols))
         for i in range(self.num_rows):
             board += "| "
             board += " | ".join(

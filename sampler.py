@@ -2,13 +2,14 @@ from env_wrapper2 import SelfPLayWrapper
 from agent import Agent
 import numpy as np
 import time
+import tensorflow as tf
 
 class Sampler:
     """ 
     Implements an algorithm to sample from a self-play environment using two different agents
 
     Attributes: 
-        envs (list): List of all the ConnectFour environments to sample from
+        envs (list): List of all the environments to sample from
         batch (int): how many environments to sample from at the same time
         agents (list): list of two agents to use for the sampling procedure
     """
@@ -18,12 +19,16 @@ class Sampler:
         self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
+        self.opponent = opponent
+        self.opponent_epsilon = opponent_epsilon
 
     def set_opponent(self, opponent):
         [env.set_opponent(opponent) for env in self.envs]
+        self.opponent = opponent
 
     def set_opponent_epsilon(self,epsilon):
         [env.set_epsilon(epsilon) for env in self.envs]
+        self.opponent_epsilon = epsilon
 
     def sample_from_game_wrapper(self,epsilon, save = True):
         """ samples from env wrappers"""
@@ -37,12 +42,19 @@ class Sampler:
         observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])       
         for e in range(10000):
             
+            # agent turn
             available_actions = [env.available_actions for env in current_envs]
             available_actions_bool = [env.available_actions_mask for env in current_envs]
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
             
             #sa = time.time()
-            results = [env.step(actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done, info     
+            o_0 = np.array([env.step_player(actions[i]) for i,env in enumerate(current_envs)]) # only state for opponent imput
+
+            # opponent turn
+            available_actions = [env.available_actions for env in current_envs]
+            available_actions_bool = [env.available_actions_mask for env in current_envs]
+            o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool) # new state, reward, done,
+            results = [env.step_opponent(o_actions[i]) for i,env in enumerate(current_envs)]
             #so = time.time()
             #steps_list += so-sa
             # bring everything in the right order

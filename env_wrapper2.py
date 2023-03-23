@@ -1,13 +1,11 @@
-# Choose the env at the top
-#**************************
-
 from agent import Agent
 import tensorflow as tf
 from gym import Env
+import numpy as np
 
 class SelfPLayWrapper(Env):
 
-    """ A Wrapper for ConnectFourEnv of keras-gym (adapted to a newer python version)
+    """ A Wrapper for Env similar to keras-gym Connect Four (adapted to a newer python version)
     also works for similar other envs
     Important: loss_reward of env is not used by use - win_reward directly here
     
@@ -22,6 +20,7 @@ class SelfPLayWrapper(Env):
         self.env = env_class()
         self.opponent = opponent
         self.epsilon = epsilon
+        self.first_reward = None
 
     def set_opponent(self, opponent : Agent):
         self.opponent = opponent
@@ -52,6 +51,35 @@ class SelfPLayWrapper(Env):
         # calculate the returns
         return tf.cast(s_1, dtype= tf.float32),r_0 - r_1,d_1
     
+    def step_player(self,a):
+        """ 
+        does a step of the player, always has to be followed by a step of the opponent, which has to choose an action in between 
+        used when playing in batches in sampler 
+        """
+        # do my step
+        s_0,r_0,d_0= self.env.step(a)
+        self.first_reward = r_0
+
+        if d_0: # if done give empty state for opponent to calculate action, stop in part two of step
+            return tf.zeros_like(s_0, dtype=tf.float32)
+        
+        # get opponents action by returning the input for it to step opponent
+        return tf.cast(s_0, dtype = tf.float32)
+    
+    def step_opponent(self,o_action):
+        """ 
+        one step of the opponent, checking whether the env is done before 
+        used when playing in batches in sampler 
+        """
+
+        if self.env.done :
+            return tf.cast(self.env.state, dtype = tf.float32), self.first_reward, True
+
+        # do the opponent's action
+        s_1,r_1,d_1 = self.env.step(o_action)
+        # calculate the returns
+        return tf.cast(s_1, dtype= tf.float32), self.first_reward - r_1,d_1
+    
     def reset(self):
         return tf.cast(self.env.reset(), dtype= tf.float32)
     
@@ -65,6 +93,9 @@ class SelfPLayWrapper(Env):
     
     @property
     def available_actions(self):
+        # the if statement is needed to use step_agent and step_opponent for more efficient sampling in batches. 
+        if self.env.done:
+            return np.array([-1])
         return self.env.available_actions
     
     @property

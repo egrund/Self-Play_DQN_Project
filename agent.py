@@ -98,7 +98,7 @@ class DQNAgent(Agent):
         
         Parameters:
             epsilon (float):
-            observations (array): (batch, 7, 7) using FourConnect
+            observations (array): (batch, 7, 7) using FourConnect (other env possible)
             available_actions (list): containing all the available actions for each batch observation
             available_actions_bool (list): containing for every index whether the action with this value is in available actions
         
@@ -156,7 +156,7 @@ class DQNAgent(Agent):
         Creates an Agent which can be used to sample action, but which cannot be trained (only the models are copied)
         """
 
-        copy = DQNAgent(env, buffer = None, batch =self.batch, model_path = "")
+        copy = DQNAgent(env, buffer = None, batch = self.batch, model_path = "")
         copy.model.set_weights(np.array(self.model.get_weights(),dtype = object))
         copy.target_model.set_weights(np.array(self.target_model.get_weights(),dtype = object))
         return copy

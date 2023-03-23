@@ -49,7 +49,10 @@ class SelfPLayWrapper(Env):
         # do the opponent's action
         s_1,r_1,d_1 = self.env.step(o_action)
         # calculate the returns
-        return tf.cast(s_1, dtype= tf.float32),r_0 - r_1,d_1
+        if d_1:
+            return tf.cast(s_1, dtype= tf.float32),- r_1,d_1
+        
+        return tf.cast(s_1, dtype= tf.float32),r_0,d_1
     
     def step_player(self,a):
         """ 
@@ -78,7 +81,10 @@ class SelfPLayWrapper(Env):
         # do the opponent's action
         s_1,r_1,d_1 = self.env.step(o_action)
         # calculate the returns
-        return tf.cast(s_1, dtype= tf.float32), self.first_reward - r_1,d_1
+        if d_1:
+            return tf.cast(s_1, dtype= tf.float32), - r_1,d_1
+
+        return tf.cast(s_1, dtype= tf.float32), self.first_reward,d_1
     
     def reset(self):
         return tf.cast(self.env.reset(), dtype= tf.float32)

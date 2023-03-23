@@ -1,4 +1,3 @@
-from keras_gym_env import ConnectFourEnv
 import numpy as np
 import datetime
 import tensorflow as tf
@@ -6,15 +5,15 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from agent import DQNAgent, RandomAgent
-from buffer import Buffer
+from agent import RandomAgent
 from sampler import Sampler
 
-def testing(agent, size = 100, printing = True, load = None, plot = False):
+def testing(agent, env_class, size = 100, printing = True, load = None, plot = False):
     """ tests the given agent against a random agent
     
     Parameters: 
         agent (DQNAgent): the agent to test
+        env_class: The env class to use
         size (int): over how many games to take the average reward
         printing (bool): if you want the results printed
         load (tuple): (start, stop, step) if you want to load and test several saved models of the given agent  
@@ -26,7 +25,7 @@ def testing(agent, size = 100, printing = True, load = None, plot = False):
         start, stop, step = 0,1,1
 
     random_agent = RandomAgent()
-    sampler = Sampler(size,agent,random_agent)
+    sampler = Sampler(size,agent,env_class, random_agent)
     rewards = []
 
     for i in range(start,stop,step):
@@ -67,13 +66,14 @@ def testing(agent, size = 100, printing = True, load = None, plot = False):
     return rewards
 
 if __name__ == "__main__":
+    from keras_gym_env import ConnectFourEnv
 
     # hyperparameter for testing
-    AV = 1000 # how many games to play for each model to test
+    AV = 10 # how many games to play for each model to test
 
     # create agent
     best_agent = RandomAgent() # DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS)
 
-    rewards = testing(best_agent, AV, printing = True)
+    rewards = testing(best_agent, ConnectFourEnv, AV, printing = True)
 
     print("done")

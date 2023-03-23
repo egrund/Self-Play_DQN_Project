@@ -2,21 +2,20 @@ from sampler import Sampler
 from testing import testing
 from agent import RandomAgent
 from env_wrapper import SelfPLayWrapper
-from keras_gym_env import ConnectFourEnv
 import tensorflow as tf
 import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01,env = SelfPLayWrapper(ConnectFourEnv())):
+def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01):
     """ """
     sampler_time_100 = 0
     inner_time_100 = 0
     outer_time_100 = 0
     # create Sampler 
-    old_agent = agent.copyAgent(env)
+    old_agent = agent.copyAgent(SelfPLayWrapper(env_class))
     with tf.device("/CPU:0"):
-        sampler = Sampler(BATCH_SIZE,agent = agent, opponent = RandomAgent())
+        sampler = Sampler(BATCH_SIZE,agent = agent, env_class= env_class, opponent = RandomAgent())
         sampler.fill_buffer(epsilon)
 
     for i in tqdm.tqdm(range(iterations)):
@@ -36,7 +35,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test
             agent.save_models(i)
 
             # testing and save test results in logs
-            unique, percentage = testing(agent, size = 100, printing=True)[0]
+            unique, percentage = testing(agent, env_class = env_class, size = 100, printing=True)[0]
             with test_writer.as_default(): 
                 for j,value in enumerate(unique):
                     tf.summary.scalar(f"reward {value}: ", percentage[j], step=i)
@@ -62,7 +61,7 @@ def train_self_play_best(agent, BATCH_SIZE, iterations : int, train_writer, test
             #print("sampler_time",time.time() - sampler_time)
             #sampler_time_100 += time.time() - sampler_time
         #print("h")
-        old_agent = agent.copyAgent(env)
+        old_agent = agent.copyAgent(SelfPLayWrapper(env_class))
 
         end = time.time()
 

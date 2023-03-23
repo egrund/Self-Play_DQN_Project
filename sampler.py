@@ -1,4 +1,4 @@
-from env_wrapper import SelfPLayWrapper
+from env_wrapper2 import SelfPLayWrapper
 from agent import Agent
 import numpy as np
 import time
@@ -13,9 +13,9 @@ class Sampler:
         agents (list): list of two agents to use for the sampling procedure
     """
 
-    def __init__(self,batch,agent, opponent : Agent ,opponent_epsilon : float = 0):
+    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0):
 
-        self.envs = [SelfPLayWrapper(opponent,opponent_epsilon) for _ in range(batch)]
+        self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
 

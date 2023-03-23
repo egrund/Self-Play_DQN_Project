@@ -70,7 +70,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 10001  # only did
+iterations = 10001  # only did 4552
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1
@@ -84,7 +84,7 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 
 ++++++++++++++++++++++
-best_agent_TikTakToe_half_epsilon/20230323-160607 (Eosandra)
+best_agent_TikTakToe_half_epsilon/20230323-160607 (Eosandra Laptop)
 ++++++++++++++++++++++
 
 env: 

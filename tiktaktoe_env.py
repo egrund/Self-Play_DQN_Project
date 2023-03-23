@@ -267,7 +267,7 @@ class TikTakToeEnv(Env):
 
     @property
     def available_actions(self):
-        actions = np.argwhere(self._state == 0)
+        actions = np.argwhere(self._state == 0).ravel()
         return actions
 
     @property

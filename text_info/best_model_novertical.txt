@@ -26,7 +26,7 @@ normalisation = True
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-hier einfügen
+20230322-004431
 ++++++++++++++++++++++
 
 env: 
@@ -68,7 +68,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 5001  # only did
+iterations = 5001  # only did 180
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1

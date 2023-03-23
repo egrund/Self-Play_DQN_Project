@@ -5,8 +5,8 @@ from env_wrapper2 import SelfPLayWrapper
 
 #from keras_gym_env import ConnectFourEnv as GameEnv
 # from keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
-from keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
-# from tiktaktoe_env import TikTakToeEnv as GameEnv
+# from keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
+from tiktaktoe_env import TikTakToeEnv as GameEnv
 
 import numpy as np
 import datetime

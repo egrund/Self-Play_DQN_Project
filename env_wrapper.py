@@ -1,6 +1,12 @@
+# Choose the env at the top
+#**************************
+
 #from keras_gym_env import ConnectFourEnv as GameEnv
 # from keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
 from keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
+#from tiktaktoe_env import TikTakToeEnv as GameEnv
+
+
 from agent import Agent
 import tensorflow as tf
 
@@ -8,6 +14,7 @@ class SelfPLayWrapper(GameEnv):
 
     """ A Wrapper for ConnectFourEnv of keras-gym (adapted to a newer python version)
     also works for similar other envs
+    Important: loss_reward of env is not used by use - win_reward directly here
     
     Attributes: 
         opponent (Agent): has to be an agent

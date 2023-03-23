@@ -1,6 +1,6 @@
-from keras_gym_env_2wins import ConnectFourEnv2Wins
+from tiktaktoe_env import TikTakToeEnv
 
-env = ConnectFourEnv2Wins()
+env = TikTakToeEnv()
 
 state = env.reset()
 player = 0
@@ -9,7 +9,7 @@ while(True):
 
     print("Turn Player ", player)
     env.render()
-    #print(state)
+    #print(state[:,:,0])
 
     input_action = int(input())
 

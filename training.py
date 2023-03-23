@@ -39,15 +39,17 @@ def train_self_play_best(agents : list, env_class, BATCH_SIZE, iterations : int,
             [agent.save_models(i) for agent in agents]
 
             # testing and save test results in logs
+            print()
             results = [testing(agent, env_class = env_class, size = 100, printing=True)[0] for agent in agents] # unique, percentage
+            print()
             for ai in range(len(agents)):
                 with test_writer[ai].as_default(): 
                     for j,value in enumerate(results[ai][0]):
-                        tf.summary.scalar(f"reward {value}: ", results[ai][1], step=i)
+                        tf.summary.scalar(f"reward {value}: ", results[ai][1][j], step=i)
                 
                 #prints to get times every 100 iterations
-                print(f"\nResults Agent {j}")
-                print(f"Loss {i}: ", losses[j].numpy(), "\n")
+                print(f"Results Agent {ai}")
+                print(f"Loss {i}: ", losses[ai].numpy())
             print(f"\ninner_iteration_average last {d} iterations: ", inner_time/d)             
             print(f"outer_iteration_average last {d} iterations: ", outer_time/d)
             print(f"Average_Sampling_Time last {d} iterations: ", sampler_time/d , "\n") 
@@ -75,7 +77,7 @@ def train_self_play_best(agents : list, env_class, BATCH_SIZE, iterations : int,
         # write summary
             
         # logging the metrics to the log file which is used by tensorboard
-        with train_writer.as_default():
+        #with train_writer[0].as_default():
             #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
-            tf.summary.scalar(f"time per iteration", end-start, step=i)
+            #tf.summary.scalar(f"time per iteration", end-start, step=i)
         outer_time += time.time()-start

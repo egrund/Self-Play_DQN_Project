@@ -23,20 +23,6 @@ np.random.seed(seed)
 rnd.seed(seed)
 tf.random.set_seed(seed)
 
-#Subfolder for Logs
-config_name = "test"
-#createsummary writer for vusalization in tensorboard    
-time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# time_string = ""
-
-best_train_path = f"logs/{config_name}/{time_string}/best_train"
-best_train_writer = tf.summary.create_file_writer(best_train_path)
-
-best_test_path = f"logs/{config_name}/{time_string}/best_test"
-best_test_writer = tf.summary.create_file_writer(best_test_path)
-
-model_path_best = f"model/{config_name}/{time_string}/best"
-
 # Hyperparameter
 iterations = 10001
 INNER_ITS = 50
@@ -49,13 +35,35 @@ POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
 SAMPLING = 2
+AGENT_NUMBER = 3 # how many agents will play against each other while training
 
-# create buffer
-best_buffer = Buffer(capacity = 100000,min_size = 5000)
+#Subfolder for Logs
+config_name = "test"
+#createsummary writer for vusalization in tensorboard    
+time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# time_string = ""
 
-# create agent
-best_agent = DQNAgent(SelfPLayWrapper(GameEnv),best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
+agents = []
+train_writer = []
+test_writer = []
+env = SelfPLayWrapper(GameEnv)
 
-train_self_play_best(best_agent, GameEnv, BATCH_SIZE, iterations, best_train_writer, best_test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,sampling = SAMPLING)
+for agent in range(1,AGENT_NUMBER+1):
+
+    best_train_path = f"logs/{config_name}/{time_string}/best_train{agent}"
+    train_writer.append(tf.summary.create_file_writer(best_train_path))
+
+    best_test_path = f"logs/{config_name}/{time_string}/best_test{agent}"
+    test_writer.append(tf.summary.create_file_writer(best_test_path))
+
+    model_path_best = f"model/{config_name}/{time_string}/best{agent}"
+
+    # create buffer
+    best_buffer = Buffer(capacity = 100000,min_size = 5000)
+
+    # create agent
+    agents.append(DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation))
+
+train_self_play_best(agents, GameEnv, BATCH_SIZE, iterations, train_writer, test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN, sampling = SAMPLING)
 
 print("done")

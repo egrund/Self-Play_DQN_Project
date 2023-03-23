@@ -2,3 +2,5 @@
 2. 3 agents epsilon/2 gegeneinander
 3. epsilon langsamer decreasing
 4. penalty für jeden Zug
+5. bigger model ?
+6. not -1 reward

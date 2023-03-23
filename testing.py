@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 from agent import RandomAgent
 from sampler import Sampler
+from env_wrapper2 import SelfPLayWrapper
 
 def testing(agent, env_class, size = 100, printing = True, load = None, plot = False):
     """ tests the given agent against a random agent
@@ -27,6 +28,8 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
     random_agent = RandomAgent()
     sampler = Sampler(size,agent,env_class, random_agent)
     rewards = []
+    env = SelfPLayWrapper(env_class)
+    all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
 
     for i in range(start,stop,step):
         if load:
@@ -35,16 +38,20 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
 
         unique, counts = np.unique(reward, return_counts=True)
 
-        # if not all rewards are in reward, add the rest with count 0
-        if unique.shape[0] != 3: 
-            all = [-1,0,1]
-            for a in all:
-                if not a in unique:
-                    counts = np.insert(counts,a+1,0)
-                    unique = np.insert(unique,a+1,a)
+        # if not all rewards are in reward, add the rest with count 0 
+        all_end_results = np.array([-1.,0.,1.])
+        counts_list = []
+        for a in all_end_results:
+            if a in unique:
+                v = counts[np.argwhere(unique == a).ravel()[0]]
+                counts_list.append(v)
+            else:
+                counts_list.append(0)
+        unique = all_end_results
+        counts = np.array(counts_list)
         
         # count 0 from how many 1 and -1
-        counts[1] = size - counts[0] - counts[2]
+        counts[1] = size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
         counts = counts / size * 100
         rewards.append((unique, counts))
         

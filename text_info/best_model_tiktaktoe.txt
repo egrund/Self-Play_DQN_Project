@@ -14,7 +14,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 5001  # only did
+iterations = 5001  # only did 400
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1
@@ -41,14 +41,16 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 5001  # only did
+iterations = 10001  # only did
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.996
+EPSILON_DECAY = 0.997
 POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
+SAMPLING = 2
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
+
 

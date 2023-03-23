@@ -7,7 +7,7 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01):
+def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_writer, test_writer, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1):
     """ """
     sampler_time_100 = 0
     inner_time_100 = 0
@@ -31,7 +31,8 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
         inner_time_100 += time.time() - start
         
         # save model
-        if i % 20 == 0:
+        d = 20
+        if i % d == 0:
             agent.save_models(i)
 
             # testing and save test results in logs
@@ -42,9 +43,9 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
                 
             #prints to get times every 100 iterations
             print("Loss ",i,": ", loss.numpy(), "\n")
-            print("inner_iteration_average last 100 iterations: ", inner_time_100/100)             
-            print("outer_iteration_average last 100 iterations: ", outer_time_100/100)
-            print("Average_Sampling_Time last 100 iterations: ", sampler_time_100/100 , "\n") 
+            print("inner_iteration_average last 100 iterations: ", inner_time_100/d)             
+            print("outer_iteration_average last 100 iterations: ", outer_time_100/d)
+            print("Average_Sampling_Time last 100 iterations: ", sampler_time_100/d , "\n") 
             
             inner_time_100 = 0
             sampler_time_100 = 0
@@ -56,10 +57,10 @@ def train_self_play_best(agent, env_class, BATCH_SIZE, iterations : int, train_w
             sampler.set_opponent(old_agent)
             sampler.set_opponent_epsilon(epsilon)
             #print("set_opponents",time.time() - sampler_time)
-            #sampler_time = time.time()
-            _ = sampler.sample_from_game_wrapper(epsilon)
+            sampler_time = time.time()
+            _ = [sampler.sample_from_game_wrapper(epsilon) for _ in range(sampling)]
             #print("sampler_time",time.time() - sampler_time)
-            #sampler_time_100 += time.time() - sampler_time
+            sampler_time_100 += time.time() - sampler_time
         #print("h")
         old_agent = agent.copyAgent(SelfPLayWrapper(env_class))
 

@@ -38,16 +38,17 @@ best_test_writer = tf.summary.create_file_writer(best_test_path)
 model_path_best = f"model/{config_name}/{time_string}/best"
 
 # Hyperparameter
-iterations = 5001
+iterations = 10001
 INNER_ITS = 50
 BATCH_SIZE = 512
 #reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.996
+EPSILON_DECAY = 0.997
 POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
+SAMPLING = 2
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
@@ -55,7 +56,6 @@ best_buffer = Buffer(capacity = 100000,min_size = 5000)
 # create agent
 best_agent = DQNAgent(SelfPLayWrapper(GameEnv),best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
 
-train_self_play_best(best_agent, GameEnv, BATCH_SIZE, iterations, best_train_writer, best_test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN)
-
+train_self_play_best(best_agent, GameEnv, BATCH_SIZE, iterations, best_train_writer, best_test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN,sampling = SAMPLING)
 
 print("done")

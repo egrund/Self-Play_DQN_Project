@@ -47,7 +47,9 @@ class TikTakToeEnv(Env):
 
     draw_reward : 0.0
         The reward associated with a draw.
-
+        
+    move_reward : -0.1
+        The reward associated with a move.
     """  # noqa: E501
     # class attributes
     num_rows = 3
@@ -56,6 +58,7 @@ class TikTakToeEnv(Env):
     win_reward = 1.0
     loss_reward = -win_reward
     draw_reward = 0.0
+    move_reward = -0.1
     action_space = Discrete(num_cols * num_rows)
     observation_space = MultiDiscrete(
         nvec=np.full((num_rows, num_cols, num_players), 2, dtype='uint8'))
@@ -304,11 +307,11 @@ class TikTakToeEnv(Env):
                     #return True, 1.0
 
         if np.any(np.tensordot(self.filters, s) == 3):
-            return True, 1.0
+            return True, win_reward
 
         # check for a draw
         if len(self.available_actions) == 0:
-            return True, 0.0
+            return True, draw_reward
 
         # this is what's returned throughout the episode
-        return False, 0.0
+        return False, move_reward

@@ -28,7 +28,7 @@ AGENT_NUMBER = 2
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-3-Agents_TikTakToe/ (Eosandra PC)
+3-Agents_TikTakToe/20230324-005528 (Eosandra PC)
 ++++++++++++++++++++++
 
 env: 
@@ -57,7 +57,7 @@ AGENT_NUMBER = 3
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-TikTakToe_epsilon_slower/
+TikTakToe_epsilon_slower/20230323-010453 (Eosandra Laptop)
 ++++++++++++++++++++++
 
 env: 
@@ -86,7 +86,7 @@ AGENT_NUMBER = 1
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-TikTakToe_no dropout/
+TikTakToe_no dropout/ (Eosandra Laptop)
 ++++++++++++++++++++++
 
 env: 
@@ -115,7 +115,7 @@ AGENT_NUMBER = 1
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-2-Agents_TikTakToe_penality_move/
+2-Agents_TikTakToe_penality_move/20230324-005947 (Fabian Laptop)
 ++++++++++++++++++++++
 
 env: 
@@ -140,5 +140,5 @@ POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
 SAMPLING = 2
-AGENT_NUMBER = 1
+AGENT_NUMBER = 2
 best_buffer = Buffer(capacity = 100000,min_size = 5000)

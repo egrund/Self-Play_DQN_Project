@@ -24,11 +24,11 @@ class Agent:
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True, gamma : tf.constant = tf.constant(0.99)):
 
         # create an initialize model and target_model
-        self.model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation)
-        self.target_model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation)
+        self.model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
+        self.target_model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
         obs = tf.expand_dims(env.reset(),axis=0)
         self.model(obs)
         self.target_model(obs)

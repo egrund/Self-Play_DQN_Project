@@ -5,3 +5,6 @@
     5. bigger model ?
     6. not -1 reward
 7. no dropout 
+
+1. smaller discount factor
+2. batch size 64

@@ -3,7 +3,7 @@ import tensorflow as tf
 class MyCNNNormalizationLayer(tf.keras.layers.Layer):
     """ a layer for a CNN with kernel size 3 and ReLu as the activation function """
 
-    def __init__(self,filters,normalization=False, reg = None):
+    def __init__(self,filters,normalization=False, reg = None, kernel_size = 3):
         """ Constructor
         
         Parameters: 
@@ -11,7 +11,7 @@ class MyCNNNormalizationLayer(tf.keras.layers.Layer):
             normalization (boolean) = whether the output of the layer should be normalized 
         """
         super(MyCNNNormalizationLayer, self).__init__()
-        self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=3, padding='same', kernel_regularizer = reg)
+        self.conv_layer = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, padding='same', kernel_regularizer = reg)
         self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
         self.activation = tf.keras.layers.Activation("relu")
     @tf.function(reduce_retracing=True)
@@ -32,7 +32,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
         """ Constructor 
         
         Parameters: 
-            layers (int) = how many Conv2D you want
+            layers (list) = how many Conv2D you want, and for each what kernel_size
             filters (int) = how many filters the Conv2D layers should have
             global_pool (boolean) = global average pooling at the end if True else MaxPooling2D
             denseNet (boolean) = whether we want to implement a denseNet (creates a concatenate layer if True)
@@ -40,11 +40,11 @@ class MyCNNBlock(tf.keras.layers.Layer):
 
         super(MyCNNBlock, self).__init__()
         self.dropout_layer = dropout_layer
-        self.conv_layers =  [MyCNNNormalizationLayer(filters,normalization, reg) for _ in range(layers)]
+        self.conv_layers =  [MyCNNNormalizationLayer(filters,normalization, reg, k) for k in layers]
         self.mode = mode
         switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
         self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
-        self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)
+        self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else (tf.keras.layers.MaxPooling2D(pool_size=2, strides=2) if global_pool is not None else None)
 
     @tf.function(reduce_retracing=True)
     def call(self,inputs,training=None):
@@ -59,13 +59,14 @@ class MyCNNBlock(tf.keras.layers.Layer):
         if(self.extra_layer is not None):
             x = self.extra_layer([inputs, x])
 
-        x = self.pool(x)
+        if self.pool is not None:
+            x = self.pool(x)
         return x
 
 class MyCNN_RL(tf.keras.Model):
     """ an ANN created to train on the mnist dataset """
     
-    def __init__(self,hidden_units : list = [64],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True):
+    def __init__(self,hidden_units : list = [64],output_units : int = 10,hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True, gamma : tf.constant = tf.constant(0.99)):
         """ Constructor 
         
         Parameters: 
@@ -81,13 +82,15 @@ class MyCNN_RL(tf.keras.Model):
         
         self.dropout_rate = dropout_rate
         self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
-        self.block = MyCNNBlock(layers = 1,filters = 128 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
+        self.block = MyCNNBlock(layers = [3],filters = 128 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
+
         self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
         self.optimizer = optimizer
         self.loss = loss
         self.output_units = output_units
+        self.gamma = gamma
 
         self.metric = [tf.keras.metrics.Mean(name="loss")]
 
@@ -122,7 +125,7 @@ class MyCNN_RL(tf.keras.Model):
             # calculate q value of this state action pair
             Qsa_estimated = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
             # calculate the best Qsa which is the target
-            target = r + tf.constant(0.99)*(Qmax)*(1-done)
+            target = r + self.gamma*(Qmax)*(1-done)
 
             losses = self.loss(Qsa_estimated, target)
 

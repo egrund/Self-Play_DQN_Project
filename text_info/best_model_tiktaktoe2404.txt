@@ -43,7 +43,7 @@ model architecture: 3 agents, playing against each other
 
 Hyperparameters:
 ***************
-iterations = 10001  # only did 
+iterations = 10001  # only did 2408
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1

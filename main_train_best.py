@@ -25,22 +25,22 @@ tf.random.set_seed(seed)
 
 # Hyperparameter
 iterations = 10001
-INNER_ITS = 50 *8
-BATCH_SIZE = 64 #512
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
 #reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
 epsilon = 1
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.998
 POLYAK = 0.9
-dropout_rate = 0.2
+dropout_rate = 0
 normalisation = True
 BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training
-discount_factor_gamma = tf.constant(0.5)
+discount_factor_gamma = tf.constant(0.7)
 
 #Subfolder for Logs
-config_name = "test"
+config_name = "TikTakToe_dicount_nosquare"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""

@@ -170,3 +170,33 @@ SAMPLING = 2
 AGENT_NUMBER = 1
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
+++++++++++++++++++++++
+TikTakToe_dicount_nosquare/20230324-154801 (Eosandra PC)
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = -0,1
+
+model architecture: 2 agents playing against each other
+******************
+- 1 Block 3 layers 128 filters 5x1, 1x5, 3x3
+- dense 64
+- output 9
+
+Hyperparameters:
+***************
+iterations = 10001  # only did 2418
+INNER_ITS = 50 * 2
+BATCH_SIZE = 512 / 2 = 256
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.998
+POLYAK = 0.9
+dropout_rate = 0
+gamma = 0.7 (immer 0.9 vorher)
+
+normalisation = True
+SAMPLING = 2
+AGENT_NUMBER = 1
+best_buffer = Buffer(capacity = 100000,min_size = 5000)

@@ -7,7 +7,7 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agents : list, env_class, BATCH_SIZE, iterations : int, train_writer : list, test_writer : list, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1):
+def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, train_writer : list, test_writer : list, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1):
     """ """
     sampler_time = 0
     inner_time = 0
@@ -18,7 +18,7 @@ def train_self_play_best(agents : list, env_class, BATCH_SIZE, iterations : int,
 
 
     with tf.device("/CPU:0"):
-        sampler = [Sampler(BATCH_SIZE,agent = agent, env_class= env_class, opponent = RandomAgent()) for agent in agents]
+        sampler = [Sampler(batch_size_sampling,agent = agent, env_class= env_class, opponent = RandomAgent()) for agent in agents]
         [s.fill_buffer(epsilon) for s in sampler]
 
     for i in tqdm.tqdm(range(iterations)):

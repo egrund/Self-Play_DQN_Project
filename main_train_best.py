@@ -25,8 +25,8 @@ tf.random.set_seed(seed)
 
 # Hyperparameter
 iterations = 10001
-INNER_ITS = 50
-BATCH_SIZE = 512
+INNER_ITS = 50 *8
+BATCH_SIZE = 64 #512
 #reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
 epsilon = 1
 EPSILON_MIN = 0.01
@@ -34,8 +34,9 @@ EPSILON_DECAY = 0.998
 POLYAK = 0.9
 dropout_rate = 0.2
 normalisation = True
+BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
-AGENT_NUMBER = 2 # how many agents will play against each other while training
+AGENT_NUMBER = 1 # how many agents will play against each other while training
 
 #Subfolder for Logs
 config_name = "test"
@@ -64,6 +65,6 @@ for agent in range(1,AGENT_NUMBER+1):
     # create agent
     agents.append(DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation))
 
-train_self_play_best(agents, GameEnv, BATCH_SIZE, iterations, train_writer, test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN, sampling = SAMPLING)
+train_self_play_best(agents, GameEnv, BATCH_SIZE_SAMPLING, iterations, train_writer, test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN, sampling = SAMPLING)
 
 print("done")

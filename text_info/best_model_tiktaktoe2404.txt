@@ -57,7 +57,7 @@ AGENT_NUMBER = 3
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-TikTakToe_epsilon_slower/20230323-010453 (Eosandra Laptop)
+TikTakToe_epsilon_slower/20230324-010453 (Eosandra Laptop)
 ++++++++++++++++++++++
 
 env: 
@@ -72,7 +72,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 2001  # only did 
+iterations = 2001  # only did 2001
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1
@@ -86,7 +86,7 @@ AGENT_NUMBER = 1
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 ++++++++++++++++++++++
-TikTakToe_no dropout/ (Eosandra Laptop)
+TikTakToe_no dropout/20230324-041828 (Eosandra Laptop)
 ++++++++++++++++++++++
 
 env: 
@@ -101,7 +101,7 @@ model architecture:
 
 Hyperparameters:
 ***************
-iterations = 2001  # only did 
+iterations = 2001  # only did 2001
 INNER_ITS = 50
 BATCH_SIZE = 512
 epsilon = 1

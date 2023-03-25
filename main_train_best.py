@@ -36,7 +36,7 @@ dropout_rate = 0
 normalisation = True
 BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
-AGENT_NUMBER = 1 # how many agents will play against each other while training
+AGENT_NUMBER = 2 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.7)
 unavailable_action_reward = True
 

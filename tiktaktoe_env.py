@@ -58,7 +58,8 @@ class TikTakToeEnv(Env):
     win_reward = 1.0
     loss_reward = -win_reward
     draw_reward = 0.0
-    move_reward = -0.1 #0
+    move_reward = 0# -0.1 #0
+    wrong_move_reward = -0.5
     action_space = Discrete(num_cols * num_rows)
     observation_space = MultiDiscrete(
         nvec=np.full((num_rows, num_cols, num_players), 2, dtype='uint8'))
@@ -117,16 +118,20 @@ class TikTakToeEnv(Env):
         return self.state
 
 
-    def step(self, a):
+    def step(self, a, return_wrong : bool = False):
         """
         Take one step in the MDP, following the single-player convention from
         gym.
 
         Parameters
         ----------
-        a : int, options: {0, 1, 2, 3, 4, 5, 6}
+        a : int, options: {0, 1, 2, 3, 4, 5, 6, 7, 8}
             The action to be taken. The action is the zero-based count of the
-            possible insertion slots, starting from the left of the board.
+            possible insertion slots, starting from the top left of the board.
+
+        return_wrong: boolean
+            True when we want to return whether or not the action was available and give a negativ reward for wrong actions
+            False when we want to raise an error for unavailable actions
 
         Returns
         -------
@@ -155,16 +160,23 @@ class TikTakToeEnv(Env):
         done : bool
             Whether the episode is done.
 
-        info : dict or None
-            A dict with some extra information (or None).
+        wrong : bool
+            Whether the action was an available action
+
+        #info : dict or None
+            #A dict with some extra information (or None).
 
         """
         if self.done:
             raise EpisodeDoneError("please reset env to start new episode")
         if not self.action_space.contains(a):
-            raise ValueError("invalid action")
+            raise ValueError("invalid action ", a)
         if a not in self.available_actions:
-            raise UnavailableActionError("action is not available")
+            if return_wrong:
+                # the last return value now is the wrong bool
+                return self.state, self.wrong_move_reward, self.done , True #, {'state_id': self.state_id}
+            else:
+                raise UnavailableActionError("action is not available")
 
         # swap players
         self._players = np.roll(self._players, -1)
@@ -175,7 +187,7 @@ class TikTakToeEnv(Env):
 
         # run logic
         self.done, reward = self._done_reward(a)
-        return self.state, reward, self.done #, {'state_id': self.state_id}
+        return (self.state, reward, self.done, False) if return_wrong else (self.state, reward, self.done) #, {'state_id': self.state_id}
 
 
     def render(self, *args, **kwargs):

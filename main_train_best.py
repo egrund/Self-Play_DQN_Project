@@ -38,9 +38,10 @@ BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.7)
+unavailable_action_reward = True
 
 #Subfolder for Logs
-config_name = "TikTakToe_dicount_nosquare"
+config_name = "test_unavailable"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""
@@ -64,8 +65,26 @@ for agent in range(1,AGENT_NUMBER+1):
     best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
     # create agent
-    agents.append(DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation, gamma = discount_factor_gamma))
+    agents.append(DQNAgent(env,
+                           best_buffer, 
+                           batch = BATCH_SIZE, 
+                           model_path = model_path_best, 
+                           polyak_update = POLYAK, 
+                           inner_iterations = INNER_ITS, 
+                           dropout_rate = dropout_rate, 
+                           normalisation = normalisation, 
+                           gamma = discount_factor_gamma))
 
-train_self_play_best(agents, GameEnv, BATCH_SIZE_SAMPLING, iterations, train_writer, test_writer, epsilon= epsilon, epsilon_decay = EPSILON_DECAY,epsilon_min = EPSILON_MIN, sampling = SAMPLING)
+train_self_play_best(agents, 
+                     GameEnv, 
+                     BATCH_SIZE_SAMPLING, 
+                     iterations, 
+                     train_writer, 
+                     test_writer, 
+                     epsilon= epsilon, 
+                     epsilon_decay = EPSILON_DECAY,
+                     epsilon_min = EPSILON_MIN, 
+                     sampling = SAMPLING, 
+                     unavailable_in=unavailable_action_reward)
 
 print("done")

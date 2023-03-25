@@ -14,13 +14,14 @@ class Sampler:
         agents (list): list of two agents to use for the sampling procedure
     """
 
-    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0):
+    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False):
 
         self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
         self.opponent = opponent
         self.opponent_epsilon = opponent_epsilon
+        self.unavailable_in = unavailable_in
 
     def set_opponent(self, opponent):
         [env.set_opponent(opponent) for env in self.envs]
@@ -45,15 +46,15 @@ class Sampler:
             # agent turn
             available_actions = [env.available_actions for env in current_envs]
             available_actions_bool = [env.available_actions_mask for env in current_envs]
-            actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool)
-            
+            actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool, unavailable = self.unavailable_in)
+
             #sa = time.time()
-            o_0 = np.array([env.step_player(actions[i]) for i,env in enumerate(current_envs)]) # only state for opponent imput
+            o_0 = np.array([env.step_player(actions[i],self.unavailable_in) for i,env in enumerate(current_envs)]) # only state for opponent imput
 
             # opponent turn
             available_actions = [env.available_actions for env in current_envs]
             available_actions_bool = [env.available_actions_mask for env in current_envs]
-            o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool) # new state, reward, done,
+            o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool, False) # new state, reward, done,
             results = [env.step_opponent(o_actions[i]) for i,env in enumerate(current_envs)]
             #so = time.time()
             #steps_list += so-sa
@@ -73,6 +74,11 @@ class Sampler:
                 #print("Average step time: ", steps_list/(e+1))
                 #print("Average time change oder: ", tidy_list/(e+1))
                 break
+
+            # remind the agent whether his last action was an unavailable action (otherwise we would get a lot of the same samples out of it)
+            # could only do it after removing done envs from current envs so the indices are right for the next round of sampling
+            w_0 = [env.last_wrong for env in current_envs]
+            self.agent.add_do_random(np.argwhere(w_0).ravel())
 
         # save data in buffer
         if save:

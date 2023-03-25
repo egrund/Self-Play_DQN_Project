@@ -43,6 +43,7 @@ class DQNAgent(Agent):
         self.batch = batch 
         self.reward_function = reward_function
         self.prioritized_experience_replay = prioritized_experience_replay
+        self.do_random = np.array([],dtype = np.int32)
       
     def train_inner_iteration(self, summary_writer, i):
         """ """
@@ -78,7 +79,7 @@ class DQNAgent(Agent):
             (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
         
-        loss_value = loss.get('loss')
+        loss_value = loss.get('loss')/256 # TODO make this variable
         # logs
         if summary_writer:
             with summary_writer.as_default():
@@ -91,8 +92,11 @@ class DQNAgent(Agent):
         
         
         return loss_value
+    
+    def add_do_random(self, inputs):
+        self.do_random = np.concatenate((self.do_random,np.array(inputs,dtype=np.int32)),axis=0,dtype=np.int32)
                 
-    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool, unavailable : bool = False):
         """ 
         selects an action using the model and an epsilon greedy policy 
         
@@ -106,17 +110,31 @@ class DQNAgent(Agent):
             the chosen action for each batch element
         """
 
-        random_action_where = [np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])]
+        random_action_where = np.array([np.random.randint(0,100)<epsilon*100 for _ in range(observations.shape[0])])
+
+        # if we chose an unavailable action as the last action, and we are reminded, here add that now we choose a random action
+        if np.any(self.do_random):
+            random_action_where[self.do_random] = True
+            #np.put(random_action_where,self.do_random,True)
+            self.do_random = np.array([],dtype=np.int32)
+
+        # if I also let the random action be unavailable sampling just takes very much longer. 
         random_actions = [np.random.choice(a) for a in available_actions]
-        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool, unavailable).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
     #@tf.function
-    def select_action(self, observations, available_actions, available_actions_bool):
+    def select_action(self, observations, available_actions, available_actions_bool, unavailable : bool = False):
         """ selects the currently best action using the model """
         probs = self.model(observations,training = False)
+
+        # add the following print if playing against the agent to get information about it's decision
+        #print("Model results: \n", probs.numpy().reshape((3,3)))
+        
         # remove all unavailable actions
-        probs = tf.where(available_actions_bool,probs,-1)
+        if not unavailable:
+            probs = tf.where(available_actions_bool,probs,-1)
+
         # calculate best action
         return tf.argmax(probs, axis = -1)
     
@@ -163,7 +181,7 @@ class DQNAgent(Agent):
 
 class RandomAgent (Agent):
 
-    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool):
+    def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool, unavailable : bool = False):
         """ 
         selects an action using the model and an epsilon greedy policy 
         but because it is a random agent, action is always random
@@ -178,7 +196,8 @@ class RandomAgent (Agent):
             the chosen action for each batch element
         """
         
-        [np.random.choice(a) for a in available_actions]
+        #[np.random.choice(a) for a in available_actions]
+        # [np.random.choice(np.arange(0,8,1)) if unavailable else np.random.choice(a) for a in available_actions] # TODO make this a variable
         return np.array([np.random.choice(a) for a in available_actions])
     
     

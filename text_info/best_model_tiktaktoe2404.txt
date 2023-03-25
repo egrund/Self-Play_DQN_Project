@@ -200,3 +200,28 @@ normalisation = True
 SAMPLING = 2
 AGENT_NUMBER = 1
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
+
+++++++++++++++++++++++
+Agent_NoDropout_MovePenalty/20230324-151527 (Fabian Laptop)
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = -0,2
+
+model architecture: 2 agents playing against each other
+******************
+- 1 Block 1 layers 128 filters 3x3
+- dense 64
+- output 9
+
+Hyperparameters:
+***************
+iterations = 10001  # 6200 
+INNER_ITS = 100
+BATCH_SIZE = 256
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.998
+POLYAK = 0.9
+dropout_rate = 0

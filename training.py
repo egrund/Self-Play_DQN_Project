@@ -34,7 +34,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
             epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
-        losses = [agent.train_inner_iteration(train_writer[j],i) for j,agent in enumerate(agents)]
+        losses = [agent.train_inner_iteration(train_writer[j],i,unavailable_in) for j,agent in enumerate(agents)]
         inner_time += time.time() - start
         
         # save model

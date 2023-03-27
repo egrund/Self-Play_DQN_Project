@@ -11,7 +11,7 @@ class Buffer:
         self.min_size = min_size
         self.current_size = 0
         self.sarsd_list = []
-        self.priorities = np.array([])
+        self.priorities = np.array([],dtype=np.longdouble)
         self.last_indices = None
         self.empty = True # is False after adding data the first time
 
@@ -39,7 +39,7 @@ class Buffer:
         if(np.any(self.priorities)):
             max_priority = np.amax(self.priorities)
         else:
-            max_priority = 1
+            max_priority = 5
             
         #extend till the capacity is reached
         for sample in sarsd:
@@ -104,10 +104,10 @@ class Buffer:
         
         norm_priors = self.normalize_priorities()
 
-        print("Priorities max: ",np.max(self.priorities))
-        print("Priorities min: ", np.min(self.priorities))
-        print("Priorities max after normalization: ",np.max(norm_priors))
-        print("Priorities min after normalization: ", np.min(norm_priors))
+        #print("Priorities max: ",np.max(self.priorities))
+        #print("Priorities min: ", np.min(self.priorities))
+        #print("Priorities max after normalization: ",np.max(norm_priors))
+        #print("Priorities min after normalization: ", np.min(norm_priors))
 
         # just in case the error message ever occurs after 8 hours again
         try:
@@ -126,6 +126,6 @@ class Buffer:
         if self.empty:
             raise RuntimeError("The buffer has to be filled to normalize priorities.")
         
-        priorities = np.power(np.array(self.priorities),0.3)
+        priorities = np.power(np.copy(self.priorities),0.3)
         return priorities/(np.sum(priorities)+1)
 

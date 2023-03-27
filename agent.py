@@ -45,7 +45,7 @@ class DQNAgent(Agent):
         self.prioritized_experience_replay = prioritized_experience_replay
         self.do_random = np.array([],dtype = np.int32)
       
-    def train_inner_iteration(self, summary_writer, i):
+    def train_inner_iteration(self, summary_writer, i, unavailable_actions_in):
         """ """
         u_p = 0
         
@@ -67,7 +67,7 @@ class DQNAgent(Agent):
             
             # if prioritized experience replay, then here
             if self.prioritized_experience_replay:
-                TD_error = self.calc_td_error(state, actions, reward, new_state, done)
+                TD_error = self.calc_td_error(state, actions, reward, new_state, done, a_action, unavailable_actions_in)
                 
                 with tf.device("/CPU:0"):
                     #t = time.time()
@@ -157,7 +157,7 @@ class DQNAgent(Agent):
         return tf.reduce_max(probs, axis = -1)
     
     @tf.function(reduce_retracing=True)
-    def calc_td_error(self, state, action, reward, new_state, done):
+    def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in):
         """ Calculates the TD error for prioritized experience replay 
         
         Parameters:
@@ -165,12 +165,14 @@ class DQNAgent(Agent):
             action (tf.Tensor): action that was chosen
             reward (tf.Tensor): reward that was given
             new_state (tf.Tensor): the next state that occured    
-            done (tf.Tensor): whether the game was finished after this action      
+            done (tf.Tensor): whether the game was finished after this action  
+            available_action_bool (tf.Tensor): Mask with bool for which action is available    
         """
 
         old_Q = tf.gather(self.model(state,training=False),tf.cast(action,dtype=tf.int32),batch_dims=1)
 
         new_action = tf.argmax(self.model(new_state,training = False),axis = -1)
+        new_action = self.select_action(new_state, None, available_action_bool, unavailable = unavailable_actions_in)
         new_Q = tf.gather(self.target_model(state,training = False), new_action, batch_dims = 1)
 
         # if the game is done, we cannot do another move

@@ -20,35 +20,64 @@ seed = 42
 #tf.random.set_seed(seed)
 
 #Subfolder from model
-config_name = "TikTakToe_dicount_nosquare"
-time_string = "20230324-154801"
+config_name = ""
+time_string = ""
 agent = 1
 
 model_path_best = f"model/{config_name}/{time_string}/best{agent}"
 
 # Hyperparameter
-iterations = 5000
-INNER_ITS = 50
-BATCH_SIZE = 256
-#reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
+#*****************
+iterations = 10001
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
+#reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
+
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.998
+EPSILON_DECAY = 0.99
+opponent_epsilon_function = lambda x: (x/2)
+
 POLYAK = 0.9
-dropout_rate =0 
+dropout_rate = 0
 normalisation = True
 
+BATCH_SIZE_SAMPLING = 512
+SAMPLING = 2
+AGENT_NUMBER = 1 # how many agents will play against each other while training
+discount_factor_gamma = tf.constant(0.3)
+unavailable_action_reward = False
+
+# Model architecture
+#********************
+CONV_KERNEL = [3]
+FILTERS = 128
+HIDDEN_UNITS = [64,]
+loss = tf.keras.losses.MeanSquaredError()
+output_activation = None
+
 # playing hyperparameter
-#index = 4260 #3720 #2840 # one model
-#index = 780 # three models playing # "3-Agents_TikTakToe" "20230324-005528"
-index = 2080 #1760 # "TikTakToe_dicount_nosquare" "20230324-154801"
+index = 2080
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
 
 # create agent
 env = SelfPLayWrapper(GameEnv)
-best_agent = DQNAgent(env,best_buffer, batch = BATCH_SIZE, model_path = model_path_best, polyak_update = POLYAK, inner_iterations = INNER_ITS, dropout_rate = dropout_rate, normalisation = normalisation)
+best_agent =  DQNAgent(env,
+        best_buffer, 
+        batch = BATCH_SIZE, 
+        model_path = model_path_best, 
+        polyak_update = POLYAK, 
+        inner_iterations = INNER_ITS, 
+        conv_kernel = CONV_KERNEL,
+        filters = FILTERS,
+        hidden_units = HIDDEN_UNITS,
+        dropout_rate = dropout_rate, 
+        normalisation = normalisation, 
+        gamma = discount_factor_gamma,
+        loss_function=loss,
+        output_activation=output_activation)
 
 best_agent.load_models(index)
 env.set_opponent(best_agent)
@@ -78,8 +107,8 @@ while(True):
     env.render()
     
     if(done):
-        end = "won" if r==1 else "lost"
-        print("You ", end) if r != 0 else print("Draw")
+        end = "won" if r==env.win_reward else "lost"
+        print("You ", end) if r != env.draw_reward else print("Draw")
         break
 
     player = int(not player)

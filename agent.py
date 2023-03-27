@@ -24,25 +24,34 @@ class Agent:
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
-    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True, gamma : tf.constant = tf.constant(0.99)):
+    def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, 
+                 conv_kernel = [3], filters = 128, hidden_units = [64], dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True, 
+                 gamma : tf.constant = tf.constant(0.99),loss_function = tf.keras.losses.MeanSquaredError(), output_activation = None):
 
         # create an initialize model and target_model
-        self.model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
-        self.target_model = MyCNN_RL(output_units = env.action_space.n, dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
+        self.model = MyCNN_RL(conv_kernel = conv_kernel, filters  = filters, hidden_units = hidden_units, output_units = env.action_space.n, 
+                              output_activation = output_activation, loss = loss_function,
+                              dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
+        self.target_model = MyCNN_RL(conv_kernel = conv_kernel, filters  = filters, hidden_units = hidden_units, output_units = env.action_space.n, 
+                                     output_activation = output_activation, loss = loss_function,
+                              dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
+        
+        # build models
         obs = tf.expand_dims(env.reset(),axis=0)
+        env.close()
         self.model(obs)
         self.target_model(obs)
         self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))
         self.inner_iterations = inner_iterations
-        self.polyak_update = polyak_update
-        env.close()
 
-        # self.env = env
+        # save other variables as attributes
+        self.polyak_update = polyak_update
         self.model_path = model_path
         self.buffer = buffer
         self.batch = batch 
         self.reward_function = reward_function
         self.prioritized_experience_replay = prioritized_experience_replay
+
         self.do_random = np.array([],dtype = np.int32)
       
     def train_inner_iteration(self, summary_writer, i, unavailable_actions_in):

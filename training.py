@@ -7,7 +7,8 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, train_writer : list, test_writer : list, epsilon = 1, epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False):
+def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, writers : list, epsilon = 1, 
+                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2)):
     """ """
     sampler_time = 0
     inner_time = 0
@@ -34,7 +35,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
             epsilon = epsilon * epsilon_decay if epsilon > epsilon_min else epsilon_min
 
         # train agent
-        losses = [agent.train_inner_iteration(train_writer[j],i,unavailable_in) for j,agent in enumerate(agents)]
+        losses = [agent.train_inner_iteration(writers[j],i,unavailable_in) for j,agent in enumerate(agents)]
         inner_time += time.time() - start
         
         # save model
@@ -47,7 +48,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
             results = [testing(agent, env_class = env_class, size = 1000, printing=True)[0] for agent in agents] # unique, percentage
             print()
             for ai in range(len(agents)):
-                with test_writer[ai].as_default(): 
+                with writers[ai].as_default(): 
                     for j,value in enumerate(results[ai][0]):
                         tf.summary.scalar(f"reward {value}: ", results[ai][1][j], step=i)
                 
@@ -67,7 +68,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
             #sampler_time = time.time()
             [sampler[j].set_opponent(old_agents[int((j+dist_opponent)%len(agents))]) for j in range(len(agents))]
             dist_opponent = dist_opponent + 1 if dist_opponent < len(agents) -1 else 0
-            [s.set_opponent_epsilon(epsilon/2) for s in sampler] #TODO make a variable
+            [s.set_opponent_epsilon( opponent_epsilon(epsilon) ) for s in sampler]
             #print("set_opponents",time.time() - sampler_time)
             sampler_start = time.time()
             _ = [[s.sample_from_game_wrapper(epsilon) for _ in range(sampling)] for s in sampler]

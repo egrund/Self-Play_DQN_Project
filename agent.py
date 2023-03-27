@@ -90,7 +90,7 @@ class DQNAgent(Agent):
             (1-self.polyak_update)*np.array(self.target_model.get_weights(),dtype = object) + 
                                       self.polyak_update*np.array(self.model.get_weights(),dtype = object))
         
-        loss_value = loss.get('loss')/256 # TODO make this variable
+        loss_value = loss.get('loss')#/batch
         # logs
         if summary_writer:
             with summary_writer.as_default():

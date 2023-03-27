@@ -20,8 +20,8 @@ seed = 42
 #tf.random.set_seed(seed)
 
 #Subfolder from model
-config_name = ""
-time_string = ""
+config_name = "test"
+time_string = "20230327-191103"
 agent = 1
 
 model_path_best = f"model/{config_name}/{time_string}/best{agent}"
@@ -57,7 +57,7 @@ loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
 
 # playing hyperparameter
-index = 2080
+index = 1200
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
@@ -82,33 +82,38 @@ best_agent =  DQNAgent(env,
 best_agent.load_models(index)
 env.set_opponent(best_agent)
 
-env.reset()
-
-player = rnd.randint(0,1) 
-done=False
-
-print("Start Player ", player)
-if player: # if opponent starts
-    env.opponent_starts()
-env.render()
-
 while(True):
 
-    print("Your turn ")
+    print()
+    print("New Game")
 
-    # choose action
-    input_action = int(input())
-    while(input_action not in env.available_actions):
-        print("This action is not valid. Please try again. ")
-        input_action = int(input())
-    
-    # do step, opponent is done automatically inside
-    state, r, done = env.step(input_action)
+    env.reset()
+
+    player = rnd.randint(0,1) 
+    done=False
+
+    print("Start Player ", player)
+    if player: # if opponent starts
+        env.opponent_starts()
     env.render()
-    
-    if(done):
-        end = "won" if r==env.win_reward else "lost"
-        print("You ", end) if r != env.draw_reward else print("Draw")
-        break
 
-    player = int(not player)
+    while(True):
+
+        print("Your turn ")
+
+        # choose action
+        input_action = int(input())
+        while(input_action not in env.available_actions):
+            print("This action is not valid. Please try again. ")
+            input_action = int(input())
+        
+        # do step, opponent is done automatically inside
+        state, r, done = env.step(input_action)
+        env.render()
+        
+        if(done):
+            end = "won" if r==env.win_reward else "lost"
+            print("You ", end) if r != env.draw_reward else print("Draw")
+            break
+
+        player = int(not player)

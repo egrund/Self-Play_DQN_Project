@@ -7,7 +7,6 @@ class SelfPLayWrapper(Env):
 
     """ A Wrapper for Env similar to keras-gym Connect Four (adapted to a newer python version)
     also works for similar other envs
-    Important: loss_reward of env is not used by use - win_reward directly here
     
     Attributes: 
         env (gym.Env): the gym env to wrap arount, has to be a 2 player game
@@ -56,7 +55,7 @@ class SelfPLayWrapper(Env):
         s_1,r_1,d_1 = self.env.step(o_action,return_wrong =  False)
         # calculate the returns
         if d_1:
-            return tf.cast(s_1, dtype= tf.float32),- r_1,d_1
+            return tf.cast(s_1, dtype= tf.float32),self.env.loss_reward if r_1 == self.env.win_reward else r_1, d_1
         
         return tf.cast(s_1, dtype= tf.float32),r_0,d_1
     
@@ -93,7 +92,7 @@ class SelfPLayWrapper(Env):
         s_1,r_1,d_1 = self.env.step(o_action,return_wrong =  False)
         # calculate the returns
         if d_1:
-            return tf.cast(s_1, dtype= tf.float32), - r_1,d_1
+            return tf.cast(s_1, dtype= tf.float32),self.env.loss_reward if r_1 == self.env.win_reward else r_1, d_1
 
         return tf.cast(s_1, dtype= tf.float32), self.first_reward,d_1
     

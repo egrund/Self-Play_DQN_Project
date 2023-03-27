@@ -34,7 +34,7 @@ unavailable_action_reward = False
 
 
 ++++++++++++++++++++++
-Agent_tanh/20230327-182459 (Fabian PC)
+Agent_TanH/20230327-192241 (Fabian PC)
 ++++++++++++++++++++++
 
 env: 

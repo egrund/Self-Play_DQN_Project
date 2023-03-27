@@ -20,8 +20,8 @@ class Buffer:
         """
         Prameters:
         ______________
-        sarsd ( nested list): list of new data samples to add to the buffer. each sample being in the order 
-            state, action, reward, new_state, done given as a list itself
+        sarsd (list): list of new data samples to add to the buffer. each sample being in the order 
+            state, action, reward, new_state, done, available_next_action_bool given as a tuple
         ______________
         
         
@@ -102,7 +102,19 @@ class Buffer:
         if self.empty:
             raise RuntimeError("The buffer has to be filled to sample.")
         self.normalize_priorities()
-        return rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
+
+        print("Priorities max: ",np.max(self.priorities))
+        print("Priorities min: ", np.min(self.priorities))
+
+        # just in case the error message ever occurs after 8 hours again
+        try:
+            output = rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
+        except ValueError:
+            print("Priorities max: ",np.max(self.priorities))
+            print("Priorities min: ", np.min(self.priorities))
+            output = rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
+
+        return output
 
     def normalize_priorities(self):
         """ normalize the priorities so they can be given as weights for random.choice """

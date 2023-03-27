@@ -67,13 +67,11 @@ class Sampler:
             #steps_list += so-sa
             # bring everything in the right order
             #sa = time.time()
-            # TODO this line in if save
             results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
             #so = time.time()
             #tidy_list+= so-sa
 
-            if save:
-                sarsd.extend(results)
+            sarsd.extend(results)
             
             observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
             current_envs = np.array([current_envs[i] for i in range(len(current_envs)) if not results[i][4]])

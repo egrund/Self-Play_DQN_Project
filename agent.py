@@ -136,7 +136,7 @@ class DQNAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable:
-            probs = tf.where(available_actions_bool,probs,-1)
+            probs = tf.where(available_actions_bool,probs,tf.reduce_min(probs)-1)
 
         # calculate best action
         return tf.argmax(probs, axis = -1)

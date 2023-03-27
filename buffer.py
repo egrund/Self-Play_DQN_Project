@@ -102,20 +102,21 @@ class Buffer:
         if self.empty:
             raise RuntimeError("The buffer has to be filled to sample.")
         
-        old_priors = self.priorities
-        self.normalize_priorities()
+        norm_priors = self.normalize_priorities()
 
-        #print("Priorities max: ",np.max(self.priorities))
-        #print("Priorities min: ", np.min(self.priorities))
+        print("Priorities max: ",np.max(self.priorities))
+        print("Priorities min: ", np.min(self.priorities))
+        print("Priorities max after normalization: ",np.max(norm_priors))
+        print("Priorities min after normalization: ", np.min(norm_priors))
 
         # just in case the error message ever occurs after 8 hours again
         try:
-            output = rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
+            output = rnd.choices([i for i in range(0,self.current_size)],weights = norm_priors,k=batch_size)
         except ValueError:
             print("Priorities max: ",np.max(self.priorities))
             print("Priorities min: ", np.min(self.priorities))
-            print("Priorities max before normalization: ",np.max(old_priors))
-            print("Priorities min before normalization: ", np.min(old_priors))
+            print("Priorities max after normalization: ",np.max(norm_priors))
+            print("Priorities min after normalization: ", np.min(norm_priors))
             output = rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
 
         return output
@@ -126,5 +127,5 @@ class Buffer:
             raise RuntimeError("The buffer has to be filled to normalize priorities.")
         
         priorities = np.power(np.array(self.priorities),0.3)
-        self.priorities = priorities/(np.sum(priorities)+1)
+        return priorities/(np.sum(priorities)+1)
 

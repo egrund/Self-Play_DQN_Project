@@ -20,25 +20,28 @@ seed = 42
 #tf.random.set_seed(seed)
 
 #Subfolder from model
-config_name = "best_agent_tiktaktoe_opponent_no_epsilon"
-time_string = "20230323-150141"
+config_name = "TikTakToe_dicount_nosquare"
+time_string = "20230324-154801"
+agent = 1
 
-model_path_best = f"model/{config_name}/{time_string}/best"
+model_path_best = f"model/{config_name}/{time_string}/best{agent}"
 
 # Hyperparameter
 iterations = 5000
 INNER_ITS = 50
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 #reward_function_adapting_agent = lambda d,r: tf.where(d, tf.where(r==0.0,tf.constant(1.0),tf.constant(0.0)), r)
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.995
+EPSILON_DECAY = 0.998
 POLYAK = 0.9
-dropout_rate = 0.2, 
+dropout_rate =0 
 normalisation = True
 
 # playing hyperparameter
-index = 2840
+#index = 4260 #3720 #2840 # one model
+#index = 780 # three models playing # "3-Agents_TikTakToe" "20230324-005528"
+index = 2080 #1760 # "TikTakToe_dicount_nosquare" "20230324-154801"
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)

@@ -15,7 +15,7 @@ model architecture: 1 agent
 Hyperparameters:
 ***************
 # Hyperparameter
-iterations = 10001
+iterations = 10001 # only did 400
 INNER_ITS = 50 *2
 BATCH_SIZE = 256 #512
 #reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))

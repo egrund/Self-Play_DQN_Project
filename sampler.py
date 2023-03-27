@@ -41,6 +41,9 @@ class Sampler:
         current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))
         observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])       
+        available_actions = [env.available_actions for env in current_envs]
+        available_actions_bool = [env.available_actions_mask for env in current_envs]
+        
         for e in range(10000):
             
             # agent turn
@@ -56,15 +59,21 @@ class Sampler:
             available_actions_bool = [env.available_actions_mask for env in current_envs]
             o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool, False) # new state, reward, done,
             results = [env.step_opponent(o_actions[i]) for i,env in enumerate(current_envs)]
+
+            # get next actions, as we also save that in the buffer
+            available_actions_bool = [env.available_actions_mask for env in current_envs]
+
             #so = time.time()
             #steps_list += so-sa
             # bring everything in the right order
             #sa = time.time()
-            results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2]] for i in range(len(current_envs))] # state, action, reward, new state, done
+            # TODO this line in if save
+            results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
             #so = time.time()
             #tidy_list+= so-sa
 
-            sarsd.extend(results)
+            if save:
+                sarsd.extend(results)
             
             observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
             current_envs = np.array([current_envs[i] for i in range(len(current_envs)) if not results[i][4]])
@@ -77,8 +86,9 @@ class Sampler:
 
             # remind the agent whether his last action was an unavailable action (otherwise we would get a lot of the same samples out of it)
             # could only do it after removing done envs from current envs so the indices are right for the next round of sampling
-            w_0 = [env.last_wrong for env in current_envs]
-            self.agent.add_do_random(np.argwhere(w_0).ravel())
+            if self.unavailable_in:
+                w_0 = [env.last_wrong for env in current_envs]
+                self.agent.add_do_random(np.argwhere(w_0).ravel())
 
         # save data in buffer
         if save:
@@ -86,10 +96,6 @@ class Sampler:
             self.agent.buffer.extend(sarsd)
             #so = time.time()
             #print("Saving in buffer time: ", so-sa)
-
-
-            
-      
 
         # render for debugging or playing
         # [e.render() for e in self.envs]

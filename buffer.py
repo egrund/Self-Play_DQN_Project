@@ -103,8 +103,8 @@ class Buffer:
             raise RuntimeError("The buffer has to be filled to sample.")
         self.normalize_priorities()
 
-        print("Priorities max: ",np.max(self.priorities))
-        print("Priorities min: ", np.min(self.priorities))
+        #print("Priorities max: ",np.max(self.priorities))
+        #print("Priorities min: ", np.min(self.priorities))
 
         # just in case the error message ever occurs after 8 hours again
         try:

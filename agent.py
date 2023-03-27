@@ -60,7 +60,9 @@ class DQNAgent(Agent):
             new_state = tf.convert_to_tensor([sample[3] for sample in minibatch],dtype = tf.float32)
             done = tf.convert_to_tensor([sample[4] for sample in minibatch],dtype = tf.float32)
             reward = self.reward_function(tf.cast(done, dtype = tf.bool), tf.convert_to_tensor([sample[2] for sample in minibatch],dtype = tf.float32))
-            loss = self.model.train_step((state, actions, reward, new_state, done), self.target_model)
+            a_action = [sample[5] for sample in minibatch]
+
+            loss = self.model.train_step((state, actions, reward, new_state, done, a_action), self)
 
             
             # if prioritized experience replay, then here
@@ -118,8 +120,9 @@ class DQNAgent(Agent):
             #np.put(random_action_where,self.do_random,True)
             self.do_random = np.array([],dtype=np.int32)
 
-        # if I also let the random action be unavailable sampling just takes very much longer. 
+        # if we also let the random action be unavailable sampling just takes very much longer. 
         random_actions = [np.random.choice(a) for a in available_actions]
+
         best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool, unavailable).numpy()
         return np.where(random_action_where,random_actions,best_actions)
 
@@ -137,6 +140,21 @@ class DQNAgent(Agent):
 
         # calculate best action
         return tf.argmax(probs, axis = -1)
+    
+    #@tf.function
+    def select_max_action_value(self, observations, available_actions_bool, unavailable : bool = False):
+        """ selects the currently best action using the model """
+        probs = self.target_model(observations,training = False)
+
+        # add the following print if playing against the agent to get information about it's decision
+        #print("Model results: \n", probs.numpy().reshape((3,3)))
+        
+        # remove all unavailable actions
+        if not unavailable:
+            probs = tf.where(available_actions_bool,probs,-1)
+
+        # calculate best action
+        return tf.reduce_max(probs, axis = -1)
     
     @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done):

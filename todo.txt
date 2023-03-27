@@ -11,3 +11,7 @@
 3. model having linear filters
 
 1. test giving negative reward for not available actions
+
+1. even smaller discount factor
+2. other activation function
+3. no unavailalbe actions in Qmax

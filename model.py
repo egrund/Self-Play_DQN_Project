@@ -82,8 +82,7 @@ class MyCNN_RL(tf.keras.Model):
         
         self.dropout_rate = dropout_rate
         self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
-        self.block = MyCNNBlock(layers = [3],filters = 128 ,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
-
+        self.block = MyCNNBlock(layers = [3],filters = 128,global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
         self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
 
@@ -109,19 +108,23 @@ class MyCNN_RL(tf.keras.Model):
         return x
 
     @tf.function(reduce_retracing=True)
-    def train_step(self, inputs, target_model):
+    def train_step(self, inputs, agent):
         """ 
         one train step of the model
 
         inputs (list): state, action, reward, new_state, done (axis 0 is the batch dim)
         """
 
-        s,a,r,s_new, done = inputs
+        # s,a,r,s_new, done = inputs
+        s,a,r,s_new, done, a_action = inputs
 
         with tf.GradientTape() as tape: 
             
             # calculate the target Q value, only if not done
-            Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
+            # Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
+            # we do not want unavailable actions to be the best next action
+            Qmax = agent.select_max_action_value(observations = s_new,available_actions_bool = a_action, unavailable = False)
+
             # calculate q value of this state action pair
             Qsa_estimated = tf.gather(self(s),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
             # calculate the best Qsa which is the target

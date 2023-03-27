@@ -101,6 +101,8 @@ class Buffer:
         """ returns random indices by priorities as weights for the next minibatch"""
         if self.empty:
             raise RuntimeError("The buffer has to be filled to sample.")
+        
+        old_priors = self.priorities
         self.normalize_priorities()
 
         #print("Priorities max: ",np.max(self.priorities))
@@ -112,6 +114,8 @@ class Buffer:
         except ValueError:
             print("Priorities max: ",np.max(self.priorities))
             print("Priorities min: ", np.min(self.priorities))
+            print("Priorities max before normalization: ",np.max(old_priors))
+            print("Priorities min before normalization: ", np.min(old_priors))
             output = rnd.choices([i for i in range(0,self.current_size)],weights = self.priorities,k=batch_size)
 
         return output

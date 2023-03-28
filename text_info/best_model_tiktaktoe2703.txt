@@ -104,6 +104,8 @@ unavailable_action_reward = False
 
 ++++++++++++++++++++++
 agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
+
+max about 99.4% win
 ++++++++++++++++++++++
 
 env: 
@@ -121,7 +123,7 @@ output_activation = tf.nn.tanh
 
 # Hyperparameter
 #*****************
-iterations = 10001
+iterations = 10001 # only did 900
 INNER_ITS = 50 *2
 BATCH_SIZE = 256 #512
 

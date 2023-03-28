@@ -228,7 +228,7 @@ class MyMLP_RL(tf.keras.Model):
             # calculate the best Qsa which is the target
 
             new_opponent_level = agent.get_opponent_level() + r/agent.max_level_length # TODO
-            target = new_opponent_level + self.gamma*(Qmax)*(1-done) # TODO
+            target = new_opponent_level * (done) + self.gamma*(Qmax)*(1-done) # TODO
 
             losses = self.loss(Qsa_estimated, target)
 

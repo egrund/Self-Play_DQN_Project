@@ -9,6 +9,27 @@ from agent import RandomAgent
 from sampler import Sampler
 from env_wrapper2 import SelfPLayWrapper
 
+def only_right_rewards(reward, right_reward_values, size):
+    """ makes sure in the returns are only the rewards from right-reward_values with their proportion"""
+
+    unique, counts = np.unique(reward, return_counts=True)
+
+    # if not all rewards are in reward, add the rest with count 0 
+    counts_list = []
+    for a in right_reward_values:
+        if a in unique:
+            v = counts[np.argwhere(unique == a).ravel()[0]]
+            counts_list.append(v)
+        else:
+            counts_list.append(0)
+    unique = right_reward_values
+    counts = np.array(counts_list)
+    
+    # count 0 from how many 1 and -1
+    counts[1] = size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
+    proportion = counts / size * 100
+    return unique, proportion
+
 def testing(agent, env_class, size = 100, printing = True, load = None, plot = False):
     """ tests the given agent against a random agent
     
@@ -36,23 +57,7 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
             agent.load_models(i)
         reward = sampler.sample_from_game_wrapper(0.0,save = False)
 
-        unique, counts = np.unique(reward, return_counts=True)
-
-        # if not all rewards are in reward, add the rest with count 0 
-        # all_end_results = np.array([-1.,0.,1.])
-        counts_list = []
-        for a in all_end_results:
-            if a in unique:
-                v = counts[np.argwhere(unique == a).ravel()[0]]
-                counts_list.append(v)
-            else:
-                counts_list.append(0)
-        unique = all_end_results
-        counts = np.array(counts_list)
-        
-        # count 0 from how many 1 and -1
-        counts[1] = size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
-        counts = counts / size * 100
+        unique, counts = only_right_rewards(reward, all_end_results, size)
         rewards.append((unique, counts))
         
         if printing:
@@ -72,7 +77,7 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
 
     return rewards
 
-def testing_adapting(agent, env_class, size = 100, printing = True, load = None, plot = False):
+def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing = True, load = None, plot = False):
     """ 
     tests the given agent against all opponents
     get difference between several agents
@@ -92,7 +97,7 @@ def testing_adapting(agent, env_class, size = 100, printing = True, load = None,
         start, stop, step = 0,1,1
 
     random_agent = RandomAgent()
-    sampler = Sampler(10, agent, env_class, random_agent, adapting_agent=True)
+    sampler = Sampler(batch_size, agent, env_class, random_agent, adapting_agent=True)
     rewards = []
     env = SelfPLayWrapper(env_class)
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
@@ -106,31 +111,21 @@ def testing_adapting(agent, env_class, size = 100, printing = True, load = None,
         else:
             print("Adapting Agent testing:")
 
-        for j in range(size):
+        rewards_list = []
+        for j in range(sampling):
             reward = sampler.sample_from_game_wrapper(0.0,save = False)
+            rewards_list.append(reward)
 
-            unique, counts = np.unique(reward, return_counts=True)
-
-            # if not all rewards are in reward, add the rest with count 0 
-            counts_list = []
-            for a in all_end_results:
-                if a in unique:
-                    v = counts[np.argwhere(unique == a).ravel()[0]]
-                    counts_list.append(v)
-                else:
-                    counts_list.append(0)
-            unique = all_end_results
-            counts = np.array(counts_list)
-            
-            # count 0 from how many 1 and -1
-            counts[1] = 10 - counts[0] - counts[2] # only needed if move reward is the same as draw reward
-            counts = counts / 10 * 100
-            rewards.append((unique, counts))
+            unique, counts = only_right_rewards(reward, all_end_results, batch_size)
             
             if printing:
                 for i,value in enumerate(unique):
-                    print(f"{j}*{size} reward {value}: {counts[i]} percent")
+                    print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
                 print("Opponent level: ", agent.get_opponent_level())
+                print()
+
+        unique, counts = only_right_rewards(rewards_list, all_end_results, batch_size * sampling)
+        rewards.append((unique,counts))
 
     if plot:
         rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
@@ -163,23 +158,7 @@ def testing_adapting_different(agent, env_class, opponents, size = 100, printing
         sampler.set_opponent(o)
         reward = sampler.sample_from_game_wrapper(0.0,save = False)
 
-        unique, counts = np.unique(reward, return_counts=True)
-
-        # if not all rewards are in reward, add the rest with count 0 
-        #all_end_results = np.array([-1.,0.,1.])
-        counts_list = []
-        for a in all_end_results:
-            if a in unique:
-                v = counts[np.argwhere(unique == a).ravel()[0]]
-                counts_list.append(v)
-            else:
-                counts_list.append(0)
-        unique = all_end_results
-        counts = np.array(counts_list)
-        
-        # count 0 from how many 1 and -1
-        counts[1] = size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
-        counts = counts / size * 100
+        unique, counts = only_right_rewards(reward, all_end_results, size)
         rewards.append((unique, counts))
         
         if printing:

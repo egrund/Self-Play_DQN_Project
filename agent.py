@@ -493,7 +493,7 @@ class AdaptingDQNAgent(Agent):
             probs = tf.where(available_actions_bool, probs,tf.where(opponent_level<= 0 , tf.constant(-500. * self.batch), tf.constant(500.*self.batch)))
 
         # calculate best action
-        return probs[self.give_adapting_action(probs, opponent_level)]
+        return tf.gather(probs,self.give_adapting_action(probs, opponent_level),batch_dims = 1)
     
     @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in, opponent_level = None):

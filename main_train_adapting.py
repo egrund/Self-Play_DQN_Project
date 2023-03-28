@@ -41,7 +41,7 @@ normalisation = True
 
 BATCH_SIZE_SAMPLING = 80*6 #512
 SAMPLING = 2
-discount_factor_gamma = tf.constant(0.3)
+discount_factor_gamma = tf.constant(0.9)
 unavailable_action_reward = False
 D = 20 # how often to save and test the agent
 
@@ -51,6 +51,7 @@ D = 20 # how often to save and test the agent
 OPPONENT_MAX_INDEX = 4000
 OPPONENT_STEP = 50
 TESTING_SIZE = 100
+TESTING_SAMPLING = 10 # how often to sample testing_size many games
 
 # best Model architecture
 #********************
@@ -65,7 +66,7 @@ BEST_INDEX = 3400
 HIDDEN_UNITS = [64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
-OPPONENT_LEVEL_MAX = BATCH_SIZE
+OPPONENT_LEVEL_MAX = 25
 
 #Subfolder for Logs
 config_name = "test"
@@ -142,6 +143,7 @@ train_adapting(adapting_agent,
         sampling = SAMPLING, 
         unavailable_in=unavailable_action_reward,
         opponent_epsilon=opponent_epsilon_function,
-        testing_size = TESTING_SIZE)
+        testing_size = TESTING_SIZE,
+        testing_sampling = TESTING_SAMPLING)
 
 print("done")

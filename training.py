@@ -89,7 +89,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
 
 def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampling, iterations : int, writer, epsilon = 1, 
                          epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20,
-                         testing_size : int = 100):
+                         testing_size : int = 100, testing_sampling : int = 10):
     """ """
     sampler_time = 0
     inner_time = 0
@@ -125,11 +125,13 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
 
             # testing and save test results in logs
             print()
-            results = testing_adapting(agent, env_class = env_class, size = testing_size, printing=True)[0]
+            unique, counts = testing_adapting(agent, env_class = env_class, batch_size = testing_size, sampling=testing_sampling, printing=True)[0]
             print()
-            with writer.as_default(): 
-                for j,value in enumerate(results[0]):
-                    tf.summary.scalar(f"reward {value}: ", results[1][j], step=i)
+            with writer.as_default():
+
+                for j,value in enumerate(unique):
+                    tf.summary.scalar(f"reward {value}: ", counts[j], step=i)
+                tf.summary.scalar(f"opponent_level_testing",agent.get_opponent_level(), step=i)
                 
             #prints to get times every 100 iterations
             print(f"Results adapting Agent")
@@ -154,6 +156,8 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
             #print("sampler_time",time.time() - sampler_time)
             sampler_time += time.time() - sampler_start
         #print("h")
+        with writer.as_default():
+            tf.sumary.scalar(f"opponent_level_sampling",agent.get_opponent_level(), step=i)
 
         end = time.time()
 

@@ -51,6 +51,10 @@ class DQNAgent(Agent):
         self.batch = batch 
         self.reward_function = reward_function
         self.prioritized_experience_replay = prioritized_experience_replay
+        self.conv_kernel = conv_kernel
+        self.filters = filters
+        self.hidden_units = hidden_units
+        self.output_activation = output_activation
 
         self.do_random = np.array([],dtype = np.int32)
       
@@ -203,7 +207,14 @@ class DQNAgent(Agent):
         Creates an Agent which can be used to sample action, but which cannot be trained (only the models are copied)
         """
 
-        copy = DQNAgent(env, buffer = None, batch = self.batch, model_path = "")
+        copy = DQNAgent(env,
+                        buffer = None, 
+                        batch = self.batch, 
+                        model_path = "", 
+                        conv_kernel = self.conv_kernel,
+                        filters = self.filters,
+                        hidden_units = self.hidden_units,
+                        output_activation =self.output_activation)
         copy.model.set_weights(np.array(self.model.get_weights(),dtype = object))
         copy.target_model.set_weights(np.array(self.target_model.get_weights(),dtype = object))
         return copy

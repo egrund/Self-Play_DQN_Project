@@ -50,7 +50,7 @@ D = 20 # how often to save and test the agent
 # because the two values have to be broadcasted together
 OPPONENT_MAX_INDEX = 4000
 OPPONENT_STEP = 50
-TESTING_SIZE = 10 # should be * len(opponent) about 1000
+TESTING_SIZE = 100
 
 # best Model architecture
 #********************

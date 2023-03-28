@@ -21,6 +21,7 @@ class Agent:
         """
         raise NotImplementedError("select_action has to be implemented to be used")
 
+# TODO best agent only other action decision formular
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm """
 
@@ -282,11 +283,13 @@ class AdaptingDQNAgent(Agent):
     """
 
     def __init__(self, best_agent : DQNAgent, env, buffer, batch : int , model_path, polyak_update = 0.9, inner_iterations = 10, 
-                 reward_function = lambda d,r: tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(0.0), r)), 
+                 reward_function = lambda d,r:r,#lambda d,r: tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(0.0), r)), 
                  hidden_units = [64], prioritized_experience_replay : bool = True, gamma : tf.constant = tf.constant(0.99), 
                  loss_function = tf.keras.losses.MeanSquaredError(), output_activation = None, opponent_level_max : int = 500):
 
         self.best_agent = best_agent
+        self.best_agent.model.trainable = False
+        self.best_agent.target_model.trainable = False
 
         # create an initialize model and target_model
         self.model = MyMLP_RL(hidden_units =hidden_units, output_units = env.action_space.n, output_activation = output_activation, 
@@ -312,7 +315,7 @@ class AdaptingDQNAgent(Agent):
         self.output_activation = output_activation
 
         self.do_random = np.array([],dtype = np.int32)
-        self.opponent_level = np.array([],dtype = np.float64)
+        self.opponent_level = np.array([],dtype = np.double)
         self.max_level_length = opponent_level_max
       
     def train_inner_iteration(self, summary_writer, i, unavailable_actions_in):
@@ -385,7 +388,6 @@ class AdaptingDQNAgent(Agent):
             inputs (numpy.array / list): 1D containing the last reward values
         """
 
-        # no reward_function around value as we want to have a value showing how much draw as 0
         # add new samples to the beginning and remove too much at the end
         self.opponent_level = np.concatenate((np.array(inputs),self.opponent_level), axis=-1, dtype=np.float64)
         self.opponent_level = self.opponent_level[0:self.max_level_length]
@@ -395,6 +397,16 @@ class AdaptingDQNAgent(Agent):
         if not self.opponent_level.any():
             return 0.0
         return np.mean(self.opponent_level)
+    
+    def reset_opponent_level(self):
+        self.opponent_level = np.array([],dtype = np.double)
+
+    def give_adapting_action(self, probs, opponent_level):
+        """ returns the action that makes self.opponent_level in the future closest to 0 """
+        if opponent_level == None:
+            opponent_level = tf.expand_dims(tf.convert_to_tensor(np.repeat(self.get_opponent_level(),probs.shape[0])),axis=-1)
+        # choose action that makes future opponent_level closest to zero
+        return tf.argmin(tf.math.abs(probs),axis=-1)
                 
     def select_action_epsilon_greedy(self,epsilon, observations, available_actions, available_actions_bool, unavailable : bool = False):
         """ 
@@ -449,13 +461,13 @@ class AdaptingDQNAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable:
-            probs = tf.where(available_actions_bool,probs,tf.reduce_min(probs)-1)
+            probs = tf.where(available_actions_bool, probs,tf.where(opponent_level<= 0 , tf.constant(-500. * self.batch), tf.constant(500.*self.batch)))
 
         # calculate best action
-        return tf.argmax(probs, axis = -1)
+        return self.give_adapting_action(probs, opponent_level)
     
     #@tf.function
-    def select_max_action_value(self, observations, available_actions_bool, unavailable : bool = False, opponent_level = None):
+    def select_adapting_action_value(self, observations, available_actions_bool, unavailable : bool = False, opponent_level = None):
         """ 
         selects the best next action Qsa given observations 
         
@@ -478,10 +490,10 @@ class AdaptingDQNAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable:
-            probs = tf.where(available_actions_bool,probs,-1)
+            probs = tf.where(available_actions_bool, probs,tf.where(opponent_level<= 0 , tf.constant(-500. * self.batch), tf.constant(500.*self.batch)))
 
         # calculate best action
-        return tf.reduce_max(probs, axis = -1)
+        return probs[self.give_adapting_action(probs, opponent_level)]
     
     @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in, opponent_level = None):
@@ -501,7 +513,6 @@ class AdaptingDQNAgent(Agent):
 
         old_Q = tf.gather(self.model(state,training=False,agent = self, opponent_level = opponent_level),tf.cast(action,dtype=tf.int32),batch_dims=1)
 
-        #new_action = tf.argmax(self.model(new_state,training = False),axis = -1)
         new_action = self.select_action(new_state, None, available_action_bool, unavailable = unavailable_actions_in)
         new_Q = tf.gather(self.target_model(state, training = False, agent = self, opponent_level = opponent_level), new_action, batch_dims = 1)
 

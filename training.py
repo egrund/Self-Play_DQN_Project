@@ -8,7 +8,7 @@ import time
 import tqdm
   
 def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, writers : list, epsilon = 1, 
-                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20):
+                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20, testing_size : int = 100):
     """ """
     sampler_time = 0
     inner_time = 0
@@ -45,7 +45,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
 
             # testing and save test results in logs
             print()
-            results = [testing(agent, env_class = env_class, size = 1000, printing=True)[0] for agent in agents] # unique, percentage
+            results = [testing(agent, env_class = env_class, size = testing_size, printing=True)[0] for agent in agents] # unique, percentage
             print()
             for ai in range(len(agents)):
                 with writers[ai].as_default(): 
@@ -89,7 +89,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
 
 def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampling, iterations : int, writer, epsilon = 1, 
                          epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20,
-                         testing_size : int = 10):
+                         testing_size : int = 100):
     """ """
     sampler_time = 0
     inner_time = 0
@@ -105,7 +105,6 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
                            unavailable_in=unavailable_in,
                            adapting_agent = True)
         sampler.fill_buffer(epsilon)
-        sampler.set_multiple_opponents(opponents)
 
     for i in tqdm.tqdm(range(iterations)):
         
@@ -126,7 +125,7 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
 
             # testing and save test results in logs
             print()
-            results = testing_adapting(agent, env_class = env_class, opponents = opponents, size = testing_size, printing=True)[0]
+            results = testing_adapting(agent, env_class = env_class, size = testing_size, printing=True)[0]
             print()
             with writer.as_default(): 
                 for j,value in enumerate(results[0]):
@@ -146,7 +145,8 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
         # new sampling + add to buffer
         with tf.device("/CPU:0"):
             #sampler_time = time.time()
-            #sampler.set_opponent()
+            sampler.set_opponent(opponents[int(i%len(opponents))])
+            agent.reset_opponent_level()
             sampler.set_opponent_epsilon( opponent_epsilon(epsilon) )
             #print("set_opponents",time.time() - sampler_time)
             sampler_start = time.time()

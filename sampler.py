@@ -30,7 +30,7 @@ class Sampler:
         self.opponent = opponent 
 
     def set_multiple_opponents(self, opponents : list):
-        if self.batch % len(opponents) is not 0:
+        if self.batch % len(opponents) != 0:
             raise ValueError("Opponents has to be broadcastable to self.envs which are batch much")
         # broadcast shapes together
         self.opponent = opponents * int((self.batch / len(opponents)))
@@ -52,9 +52,7 @@ class Sampler:
         sarsd = []
         current_envs = self.envs
         agent_turn = np.random.randint(0,2,(self.batch,))
-        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])       
-        available_actions = [env.available_actions for env in current_envs]
-        available_actions_bool = [env.available_actions_mask for env in current_envs]
+        observations = np.array([env.opponent_starts() if whether else env.reset() for whether,env in zip(agent_turn,current_envs)])    
         
         for e in range(10000):
             

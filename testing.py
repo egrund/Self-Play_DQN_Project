@@ -72,7 +72,7 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
 
     return rewards
 
-def testing_adapting(agent, env_class, opponents, size = 1, printing = True, load = None, plot = False):
+def testing_adapting(agent, env_class, size = 100, printing = True, load = None, plot = False):
     """ 
     tests the given agent against all opponents
     get difference between several agents
@@ -81,7 +81,7 @@ def testing_adapting(agent, env_class, opponents, size = 1, printing = True, loa
         agent (AdaptingDQNAgent): the agent to test
         env_class: The env class to use
         opponents (list): elements of type Agent to use as opponents
-        size (int): over how many games to take the average reward for each opponent
+        size (int): over how many games to take the average reward
         printing (bool): if you want the results printed
         load (tuple): (start, stop, step) if you want to load and test several saved models of the given agent  
     """
@@ -91,10 +91,8 @@ def testing_adapting(agent, env_class, opponents, size = 1, printing = True, loa
     else: 
         start, stop, step = 0,1,1
 
-    
-
     random_agent = RandomAgent()
-    sampler = Sampler(len(opponents) * size, agent, env_class, random_agent,adapting_agent=True)
+    sampler = Sampler(10, agent, env_class, random_agent, adapting_agent=True)
     rewards = []
     env = SelfPLayWrapper(env_class)
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
@@ -102,34 +100,37 @@ def testing_adapting(agent, env_class, opponents, size = 1, printing = True, loa
     for i in range(start,stop,step):
         if load:
             agent.load_models(i)
-        reward = sampler.sample_from_game_wrapper(0.0,save = False)
+        agent.reset_opponent_level()
+        if load:
+            print(f"Adapting Agent {i} testing:")
+        else:
+            print("Adapting Agent testing:")
 
-        unique, counts = np.unique(reward, return_counts=True)
+        for j in range(size):
+            reward = sampler.sample_from_game_wrapper(0.0,save = False)
 
-        # if not all rewards are in reward, add the rest with count 0 
-        #all_end_results = np.array([-1.,0.,1.])
-        counts_list = []
-        for a in all_end_results:
-            if a in unique:
-                v = counts[np.argwhere(unique == a).ravel()[0]]
-                counts_list.append(v)
-            else:
-                counts_list.append(0)
-        unique = all_end_results
-        counts = np.array(counts_list)
-        
-        # count 0 from how many 1 and -1
-        counts[1] = len(opponents) * size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
-        counts = counts / (size * len(opponents)) * 100
-        rewards.append((unique, counts))
-        
-        if printing:
-            if load:
-                print(f"Adapting Agent {i} testing:")
-            else:
-                print("Adapting Agent testing:")
-            for i,value in enumerate(unique):
-                print(f" reward {value}: {counts[i]} percent")
+            unique, counts = np.unique(reward, return_counts=True)
+
+            # if not all rewards are in reward, add the rest with count 0 
+            counts_list = []
+            for a in all_end_results:
+                if a in unique:
+                    v = counts[np.argwhere(unique == a).ravel()[0]]
+                    counts_list.append(v)
+                else:
+                    counts_list.append(0)
+            unique = all_end_results
+            counts = np.array(counts_list)
+            
+            # count 0 from how many 1 and -1
+            counts[1] = 10 - counts[0] - counts[2] # only needed if move reward is the same as draw reward
+            counts = counts / 10 * 100
+            rewards.append((unique, counts))
+            
+            if printing:
+                for i,value in enumerate(unique):
+                    print(f"{j}*{size} reward {value}: {counts[i]} percent")
+                print("Opponent level: ", agent.get_opponent_level())
 
     if plot:
         rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]

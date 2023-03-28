@@ -221,12 +221,14 @@ class MyMLP_RL(tf.keras.Model):
             # calculate the target Q value, only if not done
             # Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
             # we do not want unavailable actions to be the best next action
-            Qmax = agent.select_max_action_value(observations = s_new,available_actions_bool = a_action, unavailable = False, opponent_level = opponent_level)
+            Qmax = agent.select_adapting_action_value(observations = s_new,available_actions_bool = a_action, unavailable = False, opponent_level = opponent_level)
 
             # calculate q value of this state action pair
             Qsa_estimated = tf.gather(self(s, training = True, agent = agent, opponent_level = opponent_level),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
             # calculate the best Qsa which is the target
-            target = r + self.gamma*(Qmax)*(1-done)
+
+            new_opponent_level = agent.get_opponent_level() + r/agent.max_level_length # TODO
+            target = new_opponent_level + self.gamma*(Qmax)*(1-done) # TODO
 
             losses = self.loss(Qsa_estimated, target)
 

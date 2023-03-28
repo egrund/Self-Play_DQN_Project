@@ -43,18 +43,19 @@ BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.3)
-unavailable_action_reward = False
+unavailable_action_reward = False # only TikTakToe
+D = 20 # how often to save and test the agent
 
 # Model architecture
 #********************
-CONV_KERNEL = [3]
+CONV_KERNEL = [4,4]
 FILTERS = 128
-HIDDEN_UNITS = [64,]
+HIDDEN_UNITS = [64,64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
 
 #Subfolder for Logs
-config_name = "agent_linear_decay099"
+config_name = "test"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""
@@ -99,6 +100,7 @@ train_self_play_best(agents,
                      epsilon_min = EPSILON_MIN, 
                      sampling = SAMPLING, 
                      unavailable_in=unavailable_action_reward,
-                     opponent_epsilon=opponent_epsilon_function)
+                     opponent_epsilon=opponent_epsilon_function,
+                     d = D)
 
 print("done")

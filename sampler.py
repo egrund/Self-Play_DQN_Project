@@ -14,18 +14,30 @@ class Sampler:
         agents (list): list of two agents to use for the sampling procedure
     """
 
-    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False):
+    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False, adapting_agent : bool = False):
 
         self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
         self.agent = agent
         self.opponent = opponent
+        self.single_opponent = True
         self.opponent_epsilon = opponent_epsilon
         self.unavailable_in = unavailable_in
+        self.adapting_agent = adapting_agent
 
-    def set_opponent(self, opponent):
+    def set_opponent(self, opponent : Agent):
         [env.set_opponent(opponent) for env in self.envs]
-        self.opponent = opponent
+        self.opponent = opponent 
+
+    def set_multiple_opponents(self, opponents : list):
+        if self.batch % len(opponents) is not 0:
+            raise ValueError("Opponents has to be broadcastable to self.envs which are batch much")
+        # broadcast shapes together
+        self.opponent = opponents * int((self.batch / len(opponents)))
+        
+        for env,o in zip(self.envs,self.opponent):
+            env.set_opponent(o)
+        self.single_opponent = False
 
     def set_opponent_epsilon(self,epsilon):
         [env.set_epsilon(epsilon) for env in self.envs]
@@ -52,13 +64,21 @@ class Sampler:
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool, unavailable = self.unavailable_in)
 
             #sa = time.time()
-            o_0 = np.array([env.step_player(actions[i],self.unavailable_in) for i,env in enumerate(current_envs)]) # only state for opponent imput
+            if self.single_opponent:
+                o_0 = np.array([env.step_player(actions[i],self.unavailable_in) for i,env in enumerate(current_envs)]) # only state for opponent imput
 
-            # opponent turn
-            available_actions = [env.available_actions for env in current_envs]
-            available_actions_bool = [env.available_actions_mask for env in current_envs]
-            o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool, False) # new state, reward, done,
-            results = [env.step_opponent(o_actions[i]) for i,env in enumerate(current_envs)]
+                # opponent turn
+                available_actions = [env.available_actions for env in current_envs]
+                available_actions_bool = [env.available_actions_mask for env in current_envs]
+                o_actions = self.opponent.select_action_epsilon_greedy(self.opponent_epsilon,o_0,available_actions, available_actions_bool, False)
+                results = [env.step_opponent(o_actions[i]) for i,env in enumerate(current_envs)] # new state, reward, done,
+            else:
+                # here the different opponents in the envs are used
+                results = [env.step(actions[i],self.unavailable_in) for i,env in enumerate(current_envs)]
+
+            # if adapting agent give the agent information about the player level (only reward from done envs)
+            if self.adapting_agent:
+                self.agent.add_opponent_level_information([results[i][1] for i in range(len(current_envs)) if results[i][2]])
 
             # get next actions, as we also save that in the buffer
             available_actions_bool = [env.available_actions_mask for env in current_envs]
@@ -67,7 +87,11 @@ class Sampler:
             #steps_list += so-sa
             # bring everything in the right order
             #sa = time.time()
-            results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
+            if not self.adapting_agent:
+                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
+            else:
+                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i],self.agent.get_opponent_level()] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
+
             #so = time.time()
             #tidy_list+= so-sa
 
@@ -100,78 +124,7 @@ class Sampler:
 
         # return rewards for the agent
         return [sample[2] for sample in sarsd]
-
-  
-    def sample_from_game(self,epsilon, save = True):
-        """ 
-        samples from every environment in self.envs until it is done or reaches 10000 steps. 
-
-        Parameters:
-            epsilon (float): epsilon for the epsilon greedy policy
-            save (bool): whether you want to save the generated samples in the agent's buffer
-        """
-
-        sarsd = [[],[]]
-        agent_turn = np.random.randint(0,2,(self.batch,))
-        current_envs = [np.extract(agent_turn == i,self.envs) for i in range(2)]
-        shapes = [current_envs[i].shape[0] for i in range(2)]
-
-        observations = [np.array([env.reset() for env in which_agent ]) for which_agent in current_envs]
-        #start = time.time()
-        for e in range(10000):
-            #print("E: ", e)
-            #print("Shapes: ", shapes)
-
-            # get all the actions from the agents
-            #print("first observation ", observations)
-            available_actions = [[current_envs[i][j].available_actions for j in range(shapes[i])] for i in range(2)]
-            available_actions_bool = [[current_envs[i][j].available_actions_mask for j in range(shapes[i])] for i in range(2)]
-
-            actions = [self.agents[i].select_action_epsilon_greedy(epsilon, observations[i],available_actions[i], available_actions_bool[i])if shapes[i] != 0 else [] for i in range(2)]
-
-            # do the step in every env
-            results = [[current_envs[i][j].step(actions[i][j]) for j in range(shapes[i])] if shapes[i] != 0 else [] for i in range(2)]
-
-            # add first observation to new results
-            results = [[(observations[i][j],actions[i][j],results[i][j][1],results[i][j][0],results[i][j][2]) for j in range(shapes[i])] if shapes[i] != 0 else [] for i in range(2)] # state, action, reward, new state, done
-
-            [sarsd[i].extend(results[i]) for i in range(2)] 
-
-            # get observations for next turn, and remove everything that is done already
-            observations = [np.array([results[i][j][3] for j in range(shapes[i]) if not results[i][j][4]]) for i in range(2)]
-            current_envs = [np.array([current_envs[i][j] for j in range(shapes[i]) if not results[i][j][4]]) for i in range(2)]
-
-            # check if all envs are done
-            if all([observations[i].shape == (0,) for i in range(2)]):
-                #print(e," loops:", time.time()-start ,"\naverage time per loop: ", (time.time()-start)/e)
-                break
-
-            # let them switch sides for the next turn
-            current_envs.reverse()
-            observations.reverse()
-            shapes = [current_envs[i].shape[0] for i in range(2)]
-
-        # save data in buffer
-        if save:
-            [self.agents[i].buffer.extend(sarsd[i]) for i in range(2)]
-
-        # render for debugging
-        # [e.render() for e in self.envs]
-
-        # return averade reward for both agents
-        return tuple([np.mean([sarsd[i][j][2] for j in range(len(sarsd[i]))], dtype=object) for i in range(2)])
-
-    def fill_buffers(self,epsilon):
-        """ 
-        fills the empty buffer with min elements sampling several times from the environemnts
-        
-        Parameters: 
-            epsilon (float): epsilon for the epsilon greedy policy
-        """
-        
-        while(any([self.agents[i].buffer.current_size < self.agents[i].buffer.min_size for i in range(2)])):
-            _ = self.sample_from_game(epsilon)
-
+    
     def fill_buffer(self,epsilon):
         """ fills the empty buffer of the agent 
         

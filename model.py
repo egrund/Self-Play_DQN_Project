@@ -103,12 +103,15 @@ class MyCNN_RL(tf.keras.Model):
             m.reset_states()
 
     @tf.function(reduce_retracing=True)
-    def call(self, states, training = False):
+    def call(self, states, training = False, intermediate = False):
         """ forward propagation of the ANN """
-        x = self.block(states, training = training)
+        x= self.block(states, training = training)
+        inter = x # save intermediate result if we want to output it
         for layer in self.dense_list:
             x = layer(x)
         x = self.out(x)
+        if intermediate:
+            return x, inter
         return x
 
     @tf.function(reduce_retracing=True)
@@ -147,3 +150,92 @@ class MyCNN_RL(tf.keras.Model):
         return{m.name : m.result() for m in self.metric}
 
         
+class MyMLP_RL(tf.keras.Model):
+
+    def __init__(self,hidden_units : list = [64],output_units : int = 10, 
+                 hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), 
+                 loss = tf.keras.losses.MeanSquaredError(), gamma : tf.constant = tf.constant(0.99)):
+        """ Constructor 
+        
+        Parameters: 
+            hidden_units (list) = list containing one element for each hidden layer and the values are the units of each layer 
+            output_units (int) = the number of wanted output units
+            hidden_activation (function)= the activation function for the hidden layers
+            output_activation (function)= the activation fuction for the output layer
+            optimizer (tf.keras.optimizers.Optimizer)= the optimizer to use for training
+            loss (tf.keras.losses.Loss)= the loss function to use for training
+            gamma (tf.constant) = the discount factor to use for future rewards
+        """
+
+        super(MyMLP_RL, self).__init__()
+        
+        self.concat_layer = tf.keras.layers.Concatenate(axis=-1)
+        self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
+        self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
+
+        self.optimizer = optimizer
+        self.loss = loss
+        self.output_units = output_units
+        self.gamma = gamma
+
+        self.metric = [tf.keras.metrics.Mean(name="loss")]
+
+    def reset_metrics(self):
+        """ resets all the metrices that are observed during training and testing """
+        for m in self.metric:
+            m.reset_states()
+
+    # @tf.function(reduce_retracing=True)
+    def call(self, states, training = False, agent = None, opponent_level = None):
+        """ forward propagation of the ANN """
+
+        if agent == None:
+            raise ValueError("agent cannot be None")
+        if opponent_level == None:
+            opponent_level = tf.expand_dims(tf.convert_to_tensor([100]*states.shape[0],dtype=tf.float32), axis=0)
+
+        best_probs, inter = agent.best_agent.target_model(states,training = training, intermediate = True)
+        #print("first agent: ", best_probs.shape)
+        #print("inter: ", inter.shape)
+        #print("opponent level: ", opponent_level.shape)
+        x = self.concat_layer((best_probs, inter, opponent_level))
+
+        for layer in self.dense_list:
+            x = layer(x)
+        x = self.out(x)
+        return x
+
+    @tf.function(reduce_retracing=True)
+    def train_step(self, inputs, agent):
+        """ 
+        one train step of the model
+
+        inputs (list): state, action, reward, new_state, done (axis 0 is the batch dim)
+        """
+
+        # s,a,r,s_new, done = inputs
+        s,a,r,s_new, done, a_action, opponent_level = inputs
+
+        with tf.GradientTape() as tape: 
+            
+            # calculate the target Q value, only if not done
+            # Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
+            # we do not want unavailable actions to be the best next action
+            Qmax = agent.select_max_action_value(observations = s_new,available_actions_bool = a_action, unavailable = False, opponent_level = opponent_level)
+
+            # calculate q value of this state action pair
+            Qsa_estimated = tf.gather(self(s, training = True, agent = agent, opponent_level = opponent_level),indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
+            # calculate the best Qsa which is the target
+            target = r + self.gamma*(Qmax)*(1-done)
+
+            losses = self.loss(Qsa_estimated, target)
+
+            self.metric[0].update_state(losses)
+
+        # get the gradients
+        gradients = tape.gradient(losses,self.trainable_variables)
+
+        # apply the gradient
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        return{m.name : m.result() for m in self.metric}

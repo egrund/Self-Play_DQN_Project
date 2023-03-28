@@ -67,7 +67,9 @@ discount_factor_gamma = tf.constant(0.3)
 unavailable_action_reward = False
 
 ++++++++++++++++++++++
-agent_linear_decay0.99/20230327-185908 (Eosandra Laptop)
+agent_linear_decay099/20230327-185908 (Eosandra Laptop)
+
+max about 94% win
 ++++++++++++++++++++++
 
 env: 
@@ -83,7 +85,7 @@ model architecture: 1 agent
 Hyperparameters:
 ***************
 # Hyperparameter
-iterations = 10001
+iterations = 10001 # did 7859
 INNER_ITS = 50 *2
 BATCH_SIZE = 256 #512
 #reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
@@ -137,3 +139,41 @@ SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.3)
 unavailable_action_reward = False
+
+++++++++++++++++++++++
+3agents_linear/20230328-21 (Eosandra Laptop)
+
+max about 94% win
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = 0
+
+model architecture: 1 agent
+******************
+- 1 Block 3 layers 128 filters 3x3
+- dense 64
+- output default
+
+Hyperparameters:
+***************
+# Hyperparameter
+iterations = 10001 # did 
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
+
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.995
+opponent_epsilon_function = lambda x: (x/4) if (x/4) > 0.05 else 0.05
+
+POLYAK = 0.9
+dropout_rate = 0
+normalisation = True
+BATCH_SIZE_SAMPLING = 512
+SAMPLING = 2
+AGENT_NUMBER = 3 # how many agents will play against each other while training
+discount_factor_gamma = tf.constant(0.3)
+unavailable_action_reward = False
+D = 20

@@ -157,7 +157,7 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
             sampler_time += time.time() - sampler_start
         #print("h")
         with writer.as_default():
-            tf.sumary.scalar(f"opponent_level_sampling",agent.get_opponent_level(), step=i)
+            tf.summary.scalar(f"opponent_level_sampling",agent.get_opponent_level(), step=i)
 
         end = time.time()
 

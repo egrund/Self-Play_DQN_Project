@@ -34,7 +34,7 @@ unavailable_action_reward = False
 
 
 ++++++++++++++++++++++
-Agent_TanH/20230327-192241 (Fabian PC)
+Agent_TanH/20230327-192241 (Fabian Notebook)
 ++++++++++++++++++++++
 
 env: 
@@ -93,6 +93,45 @@ EPSILON_DECAY = 0.99
 POLYAK = 0.9
 dropout_rate = 0
 normalisation = True
+BATCH_SIZE_SAMPLING = 512
+SAMPLING = 2
+AGENT_NUMBER = 1 # how many agents will play against each other while training
+discount_factor_gamma = tf.constant(0.3)
+unavailable_action_reward = False
+
+
+++++++++++++++++++++++
+agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = 0
+
+model architecture: 1 agent
+******************
+CONV_KERNEL = [4,4]
+FILTERS = 128
+HIDDEN_UNITS = [64,64]
+loss = tf.keras.losses.MeanSquaredError()
+output_activation = tf.nn.tanh
+
+
+# Hyperparameter
+#*****************
+iterations = 10001
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
+
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.995
+opponent_epsilon_function = lambda x: (x/2)
+
+POLYAK = 0.9
+dropout_rate = 0
+normalisation = True
+
 BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training

@@ -67,6 +67,7 @@ class ConnectFourEnv2Wins(Env):
     win_reward = 1.0
     loss_reward = -win_reward
     draw_reward = 0.0
+    wrong_move_reward = -0.5
     action_space = Discrete(num_cols)
     observation_space = MultiDiscrete(
         nvec=np.full((num_rows + 1, num_cols, num_players), 2, dtype='uint8'))
@@ -105,7 +106,7 @@ class ConnectFourEnv2Wins(Env):
         return self.state
 
 
-    def step(self, a):
+    def step(self, a, return_wrong : bool = False):
         """
         Take one step in the MDP, following the single-player convention from
         gym.
@@ -152,8 +153,12 @@ class ConnectFourEnv2Wins(Env):
         if not self.action_space.contains(a):
             raise ValueError("invalid action")
         if a not in self.available_actions:
-            raise UnavailableActionError("action is not available")
-
+            if return_wrong:
+                # the last return value now is the wrong bool
+                return self.state, self.wrong_move_reward, self.done , True #, {'state_id': self.state_id}
+            else:
+                raise UnavailableActionError("action is not available")
+            
         # swap players
         self._players = np.roll(self._players, -1)
 

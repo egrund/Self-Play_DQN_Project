@@ -69,10 +69,9 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
                 print(f" reward {value}: {counts[i]} percent")
 
     if plot:
-        rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
-        # next two lines: https://seaborn.pydata.org/examples/wide_data_lineplot.html
-        rewards_df = pd.DataFrame(rewards_dict,index=range(start,stop,step))
-        sns.lineplot(rewards_df,palette="tab10", linewidth=2.5)
+        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
+        rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
+        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
         plt.show()
 
     return rewards
@@ -130,10 +129,9 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
         rewards.append((unique,counts))
 
     if plot:
-        rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
-        # next two lines: https://seaborn.pydata.org/examples/wide_data_lineplot.html
-        rewards_df = pd.DataFrame(rewards_dict,index=range(start,stop,step))
-        sns.lineplot(rewards_df,palette="tab10", linewidth=2.5)
+        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
+        rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
+        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
         plt.show()
 
     return rewards
@@ -184,10 +182,9 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         rewards.append((unique,counts))
 
     if plot:
-        rewards_dict = [{r[0][j]:r[1][j] for j in range(3)} for r in rewards]
-        # next two lines: https://seaborn.pydata.org/examples/wide_data_lineplot.html
-        rewards_df = pd.DataFrame(rewards_dict,index=range(len(opponents)+1))
-        sns.lineplot(rewards_df,palette="tab10", linewidth=2.5)
+        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "epsilon":idx} for j in range(3)] for idx,r in zip(np.linspace(1,0,opponent_size),rewards)]
+        rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
+        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
         plt.show()
 
     return rewards

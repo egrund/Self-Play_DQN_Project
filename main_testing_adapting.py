@@ -104,6 +104,13 @@ TESTING_SIZE = 100
 TESTING_SAMPLING = 10 # how often to sample testing_size many games
 OPPONENT_SIZE = 20 # how many different epsilon values will be tested
 
-rewards = testing_adapting_dif_epsilon_opponents(adapting_agent, TikTakToeEnv, best_agent, opponent_size = OPPONENT_SIZE, batch_size=TESTING_SIZE, sampling = TESTING_SAMPLING, plot=True)
+rewards = testing_adapting_dif_epsilon_opponents(adapting_agent, 
+                                                 TikTakToeEnv, 
+                                                 best_agent, 
+                                                 opponent_size = OPPONENT_SIZE, 
+                                                 batch_size=TESTING_SIZE, 
+                                                 sampling = TESTING_SAMPLING, 
+                                                 printing = False,
+                                                 plot=True)
 
 print("done")

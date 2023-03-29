@@ -71,7 +71,8 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axis = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes.grid(True,linestyle="--")
         plt.show()
 
     return rewards
@@ -131,7 +132,8 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes.grid(True,linestyle="--")
         plt.show()
 
     return rewards
@@ -184,7 +186,8 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "epsilon":idx} for j in range(3)] for idx,r in zip(np.linspace(1,0,opponent_size),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes.grid(True,linestyle="--")
         plt.show()
 
     return rewards

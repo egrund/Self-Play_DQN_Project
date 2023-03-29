@@ -360,7 +360,7 @@ class AdaptingAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable and available_actions_bool != None:
-            probs = tf.where(available_actions_bool, probs,tf.reduce_max(tf.abs(probs)) +1)
+            probs = tf.where(available_actions_bool, probs,tf.reduce_max(tf.abs(probs))*200 +1)
 
         # calculate best action
         return self.action_choice(probs)
@@ -580,7 +580,9 @@ class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
     def action_choice(self, probs):
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
-        return tf.argmin(tf.math.abs(probs),axis=-1)
+        # scale positive values a little smaller so the propertion of loosing and winning is more balanced
+        helping = tf.where(probs>0,probs*tf.constant(0.01),probs)
+        return tf.argmin(tf.math.abs(helping),axis=-1)
 
 class MinMax_Agent (Agent):
     """ 

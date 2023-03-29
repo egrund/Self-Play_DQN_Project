@@ -581,7 +581,7 @@ class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
         # scale positive values a little smaller so the propertion of loosing and winning is more balanced
-        helping = tf.where(probs>0,probs*self.calculation_value,probs)
+        helping = tf.where(probs<0,probs*self.calculation_value,probs)
         return tf.argmin(tf.math.abs(helping),axis=-1)
     
 class AdaptingAgent3(AdaptingAgent): # same as AdaptingAgent at the moment

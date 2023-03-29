@@ -9,7 +9,7 @@ import tensorflow as tf
 import random as rnd
 
 
-from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent, Agent
+from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent3, Agent
 from buffer import Buffer
 from training import train_self_play_best
 
@@ -64,8 +64,8 @@ output_activation = None
 GAME_BALANCE_MAX = 25
 
 #Subfolder for Logs
-config_name_adapting = "adapting_test"   
-time_string_adapting = "20230329-103205"
+config_name_adapting = "best_agent_tiktaktoe_0998"  
+time_string_adapting = "20230327-191103"
 model_path = f"model/{config_name_adapting}/{time_string_adapting}"
 model_path_adapting = model_path + "/adapting"
 # playing hyperparameter for adapting agent
@@ -76,7 +76,7 @@ env = SelfPLayWrapper(GameEnv)
 best_agent =  DQNAgent(env,
         None, 
         batch = BATCH_SIZE, 
-        model_path = model_path + "/best", 
+        model_path = model_path + "/best1",
         polyak_update = POLYAK, 
         inner_iterations = INNER_ITS, 
         conv_kernel = CONV_KERNEL,
@@ -87,20 +87,21 @@ best_agent =  DQNAgent(env,
         gamma = discount_factor_gamma,
         loss_function=loss,
         output_activation=output_activation)
-best_agent.load_models(0)
+best_agent.load_models(3400)
 
-adapting_agent = AdaptingAgent(best_agent=best_agent,
-                                  #env = env, 
-                                  #buffer = None,
-                                  #batch = BATCH_SIZE,
-                                  #model_path=model_path_adapting,
-                                  #polyak_update=POLYAK,
-                                  #inner_iterations=INNER_ITS,
-                                  #hidden_units=HIDDEN_UNITS,
-                                  #gamma = discount_factor_gamma,
-                                  #loss_function=loss,
-                                  #output_activation=output_activation,
-                                  game_balance_max=GAME_BALANCE_MAX)
+adapting_agent = AdaptingAgent3(best_agent=best_agent,
+                                calculation_value = tf.constant(0.5),
+                                #env = env, 
+                                #buffer = None,
+                                #batch = BATCH_SIZE,
+                                #model_path=model_path_adapting,
+                                #polyak_update=POLYAK,
+                                #inner_iterations=INNER_ITS,
+                                #hidden_units=HIDDEN_UNITS,
+                                #gamma = discount_factor_gamma,
+                                #loss_function=loss,
+                                #output_activation=output_activation,
+                                game_balance_max=GAME_BALANCE_MAX)
 #adapting_agent.load_models(playing_index)
 
 env.set_opponent(adapting_agent)

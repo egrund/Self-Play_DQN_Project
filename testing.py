@@ -71,7 +71,7 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axis = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="index", y="percentage", hue="reward")
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -132,7 +132,7 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="index", y="percentage", hue="reward")
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -151,16 +151,14 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         printing (bool): if you want the results printed
     """
 
-    random_agent = RandomAgent()
-    sampler = Sampler(batch_size, agent, env_class, random_agent,adapting_agent=True)
+    sampler = Sampler(batch_size, agent, env_class, opponent,adapting_agent=False) #True)
     rewards = []
     env = SelfPLayWrapper(env_class)
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
-    sampler.set_opponent(opponent)
 
-    for e in np.linspace(1,0,opponent_size):
-        agent.reset_game_balance()
-        agent.reset_opponent_level()
+    for e in np.linspace(0,1,opponent_size):
+        #agent.reset_game_balance()
+        #agent.reset_opponent_level()
         sampler.set_opponent_epsilon(e)
 
         if printing:
@@ -168,7 +166,7 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
 
         rewards_list = []
         for j in range(sampling):
-            reward = sampler.sample_from_game_wrapper(e,save = False)
+            reward = sampler.sample_from_game_wrapper(0.0,save = False)
             rewards_list.extend(reward)
 
             unique, counts = only_right_rewards(reward, all_end_results, batch_size)
@@ -176,8 +174,8 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
             if printing:
                 for i,value in enumerate(unique):
                     print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
-                print("Game balance: ", agent.get_game_balance())
-                print("Opponent level: ", agent.opponent_level.numpy())
+                #print("Game balance: ", agent.get_game_balance())
+                #print("Opponent level: ", agent.opponent_level.numpy())
                 print()
 
         unique, counts = only_right_rewards(rewards_list, all_end_results, batch_size * sampling)

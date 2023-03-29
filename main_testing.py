@@ -20,8 +20,8 @@ rnd.seed(seed)
 tf.random.set_seed(seed)
 
 #Subfolder from model
-config_name = ""
-time_string = ""
+config_name = "best_agent_tiktaktoe_0998"
+time_string = "20230327-191103"
 agent = 1
 model_path_best = f"model/{config_name}/{time_string}/best{agent}"
 
@@ -54,6 +54,7 @@ FILTERS = 128
 HIDDEN_UNITS = [64,]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
+BEST_INDEX = 3400
 
 # create buffer
 best_buffer = Buffer(capacity = 100000,min_size = 5000)
@@ -75,12 +76,13 @@ agent = DQNAgent(env,
         gamma = discount_factor_gamma,
         loss_function=loss,
         output_activation=output_activation)
+agent.load_models(BEST_INDEX)
 
 # Testing Hyperparameter
 AV = 10000 # how many games to play for each model to test
 # from which iterations to load the models
 LOAD = (0,500+1,100) # start,stop,step
 
-rewards = testing(agent,TikTakToeEnv, size=AV,load = LOAD,plot=True)
+rewards = testing(agent,TikTakToeEnv, size=AV,load = False,plot=False)
 
 print("done")

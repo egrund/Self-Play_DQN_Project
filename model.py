@@ -244,11 +244,6 @@ class MyMLP_RL(tf.keras.Model):
             new_game_balance = tf.add( game_balance, tf.divide(r, agent.max_balance_length))
             target = new_game_balance * (done) + self.gamma*(Qbest)*(1-done)
 
-            if summary_writer != None:
-                with summary_writer.as_default():
-                    tf.summary.scalar('prediction', Qsa_estimated, step=step)
-                    tf.summary.scalar('target', target, step=step)
-
             losses = self.loss(Qsa_estimated, target)
 
             self.metric[0].update_state(losses)
@@ -258,5 +253,10 @@ class MyMLP_RL(tf.keras.Model):
 
         # apply the gradient
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        if summary_writer != None:
+            with summary_writer.as_default():
+                tf.summary.scalar('prediction', tf.reduce_mean(Qsa_estimated), step=step)
+                tf.summary.scalar('target', tf.reduce_mean(target), step=step)
 
         return{m.name : m.result() for m in self.metric}

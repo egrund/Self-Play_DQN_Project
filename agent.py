@@ -572,17 +572,39 @@ class AdaptingDQNAgent(AdaptingAgent):
 class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
     """ do not train this agent, only uses some functionality of DQN agent """
 
-    def __init__(self, best_agent : DQNAgent, game_balance_max : int = 500):
-        
+    def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.01), game_balance_max : int = 500):  
         super().__init__(best_agent,game_balance_max)
+        self.calculation_value = calculation_value
 
     #@tf.function(reduce_retracing=True)
     def action_choice(self, probs):
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
         # scale positive values a little smaller so the propertion of loosing and winning is more balanced
-        helping = tf.where(probs>0,probs*tf.constant(0.01),probs)
+        helping = tf.where(probs>0,probs*self.calculation_value,probs)
         return tf.argmin(tf.math.abs(helping),axis=-1)
+    
+class AdaptingAgent3(AdaptingAgent): # same as AdaptingAgent at the moment
+    """ do not train this agent, only uses some functionality of DQN agent """
+
+    def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.3), game_balance_max : int = 500):
+        super().__init__(best_agent,game_balance_max)
+        self.calculation_value = calculation_value
+
+    #@tf.function(reduce_retracing=True)
+    def action_choice(self, probs):
+        """ returns the action that makes self.game_balance in the future closest to 0 """
+        # choose action that makes future game_balance closest to zero
+        # scale the positive action values between 0 and 1, then choose a certain percentage point
+
+        scaled_around_value = tf.subtract(tf.divide(probs,tf.reduce_max(probs)), self.calculation_value)
+        adapting_action =  tf.argmin(tf.math.abs(scaled_around_value),axis=-1)
+
+        # return best action when we are loosing
+        boolean_value = tf.where(tf.reduce_max(probs,axis=-1)<tf.constant(0.0),True,False)
+        best_action = tf.argmax(probs,axis=-1)
+
+        return tf.where(boolean_value, best_action, adapting_action)
 
 class MinMax_Agent (Agent):
     """ 

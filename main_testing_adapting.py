@@ -7,7 +7,7 @@ import random as rnd
 from env_wrapper2 import SelfPLayWrapper
 from tiktaktoe_env import TikTakToeEnv 
 
-from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2
+from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent3
 from buffer import Buffer
 from training import train_self_play_best
 from testing import testing_adapting_dif_epsilon_opponents
@@ -85,7 +85,8 @@ best_agent = DQNAgent(env,
         output_activation=output_activation)
 best_agent.load_models(BEST_INDEX)
 
-adapting_agent = AdaptingAgent2(best_agent=best_agent,
+adapting_agent = AdaptingAgent3(best_agent=best_agent,
+                            calculation_value = tf.constant(0.3),
                             #env = env, 
                             #buffer = None,
                             #batch = BATCH_SIZE,
@@ -102,7 +103,7 @@ adapting_agent = AdaptingAgent2(best_agent=best_agent,
 #**************************
 TESTING_SIZE = 100
 TESTING_SAMPLING = 10 # how often to sample testing_size many games
-OPPONENT_SIZE = 20 # how many different epsilon values will be tested
+OPPONENT_SIZE = 5 # how many different epsilon values will be tested
 
 rewards = testing_adapting_dif_epsilon_opponents(adapting_agent, 
                                                  TikTakToeEnv, 

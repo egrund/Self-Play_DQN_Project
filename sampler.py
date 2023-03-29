@@ -76,7 +76,7 @@ class Sampler:
 
             # if adapting agent give the agent information about the player level (only reward from done envs)
             if self.adapting_agent:
-                self.agent.add_opponent_level_information([results[i][1] for i in range(len(current_envs)) if results[i][2]])
+                self.agent.add_game_balance_information([results[i][1] for i in range(len(current_envs)) if results[i][2]])
 
             # get next actions, as we also save that in the buffer
             available_actions_bool = [env.available_actions_mask for env in current_envs]
@@ -86,9 +86,11 @@ class Sampler:
             # bring everything in the right order
             #sa = time.time()
             if not self.adapting_agent:
-                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
+                # state, action, reward, new state, done, next_available_actions_bool
+                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))]
             else:
-                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i],self.agent.get_opponent_level()] for i in range(len(current_envs))] # state, action, reward, new state, done, next_available_actions_bool
+                # state, action, reward, new state, done, next_available_actions_bool, game_balance, opponent_level
+                results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i],self.agent.get_game_balance(), self.agent.opponent_level] for i in range(len(current_envs))] 
 
             #so = time.time()
             #tidy_list+= so-sa

@@ -105,6 +105,7 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
     for i in range(start,stop,step):
         if load:
             agent.load_models(i)
+        agent.reset_game_balance()
         agent.reset_opponent_level()
         if load:
             print(f"Adapting Agent {i} testing:")
@@ -114,14 +115,15 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
         rewards_list = []
         for j in range(sampling):
             reward = sampler.sample_from_game_wrapper(0.0,save = False)
-            rewards_list.append(reward)
+            rewards_list.extend(reward)
 
             unique, counts = only_right_rewards(reward, all_end_results, batch_size)
             
             if printing:
                 for i,value in enumerate(unique):
                     print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
-                print("Opponent level: ", agent.get_opponent_level())
+                print("Game balance: ", agent.get_game_balance())
+                print("Opponent level: ", agent.opponent_level.numpy())
                 print()
 
         unique, counts = only_right_rewards(rewards_list, all_end_results, batch_size * sampling)

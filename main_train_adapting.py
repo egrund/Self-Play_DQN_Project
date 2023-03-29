@@ -28,12 +28,11 @@ tf.random.set_seed(seed)
 iterations = 10001
 INNER_ITS = 50 *2
 BATCH_SIZE = 256 #512
-#reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
 
 epsilon = 1
 EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.99
-opponent_epsilon_function = lambda x: (x/2)
+EPSILON_DECAY = 0.998
+opponent_epsilon_function = lambda x: np.random.uniform((x/2 if x > 0.01 else 0), 1)
 
 POLYAK = 0.9
 dropout_rate = 0
@@ -66,18 +65,20 @@ BEST_INDEX = 3400
 HIDDEN_UNITS = [64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
-OPPONENT_LEVEL_MAX = 25
+GAME_BALANCE_MAX = 25
 
 #Subfolder for Logs
-config_name = "test"
+config_name = "adapting_test"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""
 
 best_model_path = f"model/best_agent_tiktaktoe_0998/20230327-191103/best1"
 
-writer_path = f"logs/{config_name}/{time_string}/adapting_{config_name}_{time_string}"
-writer = tf.summary.create_file_writer(writer_path)
+writer_path = f"logs/{config_name}/{time_string}/adapting_{config_name}_{time_string}_training"
+writer_train = tf.summary.create_file_writer(writer_path)
+writer_path = f"logs/{config_name}/{time_string}/adapting_{config_name}_{time_string}_testing"
+writer_test = tf.summary.create_file_writer(writer_path)
 
 model_path = f"model/{config_name}/{time_string}/adapting"
 
@@ -101,6 +102,8 @@ best_agent = DQNAgent(env,
         loss_function=loss_best,
         output_activation=output_activation_best)
 best_agent.load_models(BEST_INDEX)
+best_agent.model_path = f"model/{config_name}/{time_string}/best"
+best_agent.save_models(0)
 
 adapting_agent = AdaptingDQNAgent(best_agent=best_agent,
                                   env = env, 
@@ -113,7 +116,7 @@ adapting_agent = AdaptingDQNAgent(best_agent=best_agent,
                                   gamma = discount_factor_gamma,
                                   loss_function=loss,
                                   output_activation=output_activation,
-                                  opponent_level_max=OPPONENT_LEVEL_MAX)
+                                  game_balance_max=GAME_BALANCE_MAX)
 
 opponents = [DQNAgent(env,
         None, 
@@ -136,7 +139,8 @@ train_adapting(adapting_agent,
         GameEnv, 
         BATCH_SIZE_SAMPLING, 
         iterations, 
-        writer,
+        writer_train,
+        writer_test,
         epsilon= epsilon, 
         epsilon_decay = EPSILON_DECAY,
         epsilon_min = EPSILON_MIN, 

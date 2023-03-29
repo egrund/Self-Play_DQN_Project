@@ -360,7 +360,7 @@ class AdaptingAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable and available_actions_bool != None:
-            probs = tf.where(available_actions_bool, probs,tf.reduce_max(tf.abs(probs))*200 +1)
+            probs = tf.where(available_actions_bool, probs,-tf.reduce_max(tf.abs(probs))*200 +1)
 
         # calculate best action
         return self.action_choice(probs)

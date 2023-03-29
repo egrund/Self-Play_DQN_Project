@@ -86,7 +86,7 @@ best_agent = DQNAgent(env,
 best_agent.load_models(BEST_INDEX)
 
 adapting_agent = AdaptingAgent3(best_agent=best_agent,
-                            calculation_value = tf.constant(0.3),
+                            calculation_value = tf.constant(0.5),
                             #env = env, 
                             #buffer = None,
                             #batch = BATCH_SIZE,

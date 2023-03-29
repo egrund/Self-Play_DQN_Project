@@ -156,7 +156,7 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
     env = SelfPLayWrapper(env_class)
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
 
-    for e in np.linspace(0,1,opponent_size):
+    for e in np.linspace(1,0,opponent_size):
         #agent.reset_game_balance()
         #agent.reset_opponent_level()
         sampler.set_opponent_epsilon(e)

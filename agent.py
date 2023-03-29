@@ -423,7 +423,7 @@ class AdaptingDQNAgent(AdaptingAgent):
             game_balance = tf.expand_dims(tf.convert_to_tensor([sample[6] for sample in minibatch], dtype = tf.float32),axis=-1)
             opponent_level = tf.expand_dims(tf.convert_to_tensor([sample[7] for sample in minibatch], dtype = tf.float32),axis=-1)
 
-            loss = self.model.train_step((state, actions, reward, new_state, done, a_action, game_balance, opponent_level), self)
+            loss = self.model.train_step((state, actions, reward, new_state, done, a_action, game_balance, opponent_level), self, summary_writer, i*j)
 
             
             # if prioritized experience replay, then here

@@ -221,7 +221,7 @@ class MyMLP_RL(tf.keras.Model):
         return x, new_opponent_level
 
     #@tf.function(reduce_retracing=True)
-    def train_step(self, inputs, agent):
+    def train_step(self, inputs, agent, summary_writer = None, step = None):
         """ 
         one train step of the model
 
@@ -243,6 +243,11 @@ class MyMLP_RL(tf.keras.Model):
             # calculate the future change in game_balance
             new_game_balance = tf.add( game_balance, tf.divide(r, agent.max_balance_length))
             target = new_game_balance * (done) + self.gamma*(Qbest)*(1-done)
+
+            if summary_writer != None:
+                with summary_writer.as_default():
+                    tf.summary.scalar('prediction', Qsa_estimated, step=step)
+                    tf.summary.scalar('target', target, step=step)
 
             losses = self.loss(Qsa_estimated, target)
 

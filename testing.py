@@ -65,13 +65,57 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
                 print(f"Best Agent {i} testing:")
             else:
                 print("Best Agent testing:")
-            for i,value in enumerate(unique):
-                print(f" reward {value}: {counts[i]} percent")
+            for j,value in enumerate(unique):
+                print(f" reward {value}: {counts[j]} percent")
 
     if plot:
         rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
         axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="index", y="percentage", hue="reward")
+        axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
+        plt.show()
+
+    return rewards
+
+def testing_dif_agents(agent, env_class, size = 100, load = None, printing = True, plot = False):
+    """ tests the given agent against a random agent
+    
+    Parameters: 
+        agent (DQNAgent): the agent to test
+        env_class: The env class to use
+        size (int): over how many games to take the average reward
+        printing (bool): if you want the results printed
+        load (tuple): (config_list, indices_list) if you want to load and test several saved models of the given agent  
+    """
+
+    config_list, indices_list = load
+
+    random_agent = RandomAgent()
+    sampler = Sampler(size,agent,env_class, random_agent)
+    rewards = []
+    env = SelfPLayWrapper(env_class)
+    all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
+
+    for i in range(len(config_list)):
+        if load:
+            agent.model_path = f"model/" + config_list[i]
+
+        for idx in indices_list[i]:
+            agent.load_models(idx)
+            reward = sampler.sample_from_game_wrapper(0.0,save = False)
+
+            unique, counts = only_right_rewards(reward, all_end_results, size)
+            rewards.append((unique, counts, config_list[i], idx))
+            
+            if printing:
+                print(f"Best Agent {config_list[i]};{idx}testing:")
+                for j,value in enumerate(unique):
+                    print(f" reward {value}: {counts[j]} percent")
+
+    if plot:
+        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "config_index": r[2] + str(r[3])} for j in range(3)] for r in rewards]
+        rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
+        axes = sns.barplot(rewards_df, linewidth=2, palette= "tab10",y="config_index", x="percentage", hue="reward", orient="h")
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -120,8 +164,8 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
             unique, counts = only_right_rewards(reward, all_end_results, batch_size)
             
             if printing:
-                for i,value in enumerate(unique):
-                    print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
+                for h,value in enumerate(unique):
+                    print(f"{j}*{batch_size} reward {value}: {counts[h]} percent")
                 print("Game balance: ", agent.get_game_balance())
                 print("Opponent level: ", agent.opponent_level.numpy())
                 print()
@@ -173,8 +217,8 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
             unique, counts = only_right_rewards(reward, all_end_results, batch_size)
             
             if printing:
-                for i,value in enumerate(unique):
-                    print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
+                for h,value in enumerate(unique):
+                    print(f"{j}*{batch_size} reward {value}: {counts[h]} percent")
                 if adapting:
                     print("Game balance: ", agent.get_game_balance())
                     print("Opponent level: ", agent.opponent_level.numpy())

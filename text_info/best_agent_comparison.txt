@@ -1,0 +1,76 @@
+Best Agent 3agents_linear/20230328-212250/best1;900testing:
+ reward -1.0: 1.9300000000000002 percent
+ reward 0.0: 9.86 percent
+ reward 1.0: 88.21 percent
+Best Agent 3agents_linear/20230328-212250/best1;1200testing:
+ reward -1.0: 0.27 percent
+ reward 0.0: 7.35 percent
+ reward 1.0: 92.38 percent
+Best Agent 3agents_linear/20230328-212250/best1;1150testing:
+ reward -1.0: 0.6 percent
+ reward 0.0: 8.06 percent
+ reward 1.0: 91.34 percent
+Best Agent 3agents_linear/20230328-212250/best2;1050testing:
+ reward -1.0: 0.74 percent
+ reward 0.0: 7.02 percent 
+ reward 1.0: 92.24 percent
+Best Agent 3agents_linear/20230328-212250/best2;1250testing:
+ reward -1.0: 0.06 percent
+ reward 0.0: 9.07 percent
+ reward 1.0: 90.86999999999999 percent
+Best Agent 3agents_linear/20230328-212250/best3;800testing:
+ reward -1.0: 0.0 percent
+ reward 0.0: 8.03 percent
+ reward 1.0: 91.97 percent
+Best Agent 3agents_linear/20230328-212250/best3;1400testing:
+ reward -1.0: 0.3 percent
+ reward 0.0: 8.559999999999999 percent
+ reward 1.0: 91.14 percent
+Best Agent agent_linear_decay099/20230327-185908/best1;5250testing:
+ reward -1.0: 0.13 percent
+ reward 0.0: 9.35 percent
+ reward 1.0: 90.52 percent
+Best Agent agent_linear_decay099/20230327-185908/best1;5550testing:
+ reward -1.0: 0.44 percent
+ reward 0.0: 6.47 percent
+ reward 1.0: 93.08999999999999 percent
+Best Agent agent_linear_decay099/20230327-185908/best1;5300testing:
+ reward -1.0: 0.0 percent
+ reward 0.0: 5.47 percent
+ reward 1.0: 94.53 percent
+Best Agent agent_linear_decay099/20230327-185908/best1;5400testing:
+ reward -1.0: 0.41000000000000003 percent
+ reward 0.0: 7.82 percent
+ reward 1.0: 91.77 percent
+Best Agent agent_linear_decay099/20230327-185908/best1;5800testing:
+ reward -1.0: 0.24 percent
+ reward 0.0: 6.140000000000001 percent
+ reward 1.0: 93.62 percent
+Best Agent AgentTanH/20230327-192241/best1;250testing:
+ reward -1.0: 0.11 percent
+ reward 0.0: 6.92 percent
+ reward 1.0: 92.97 percent
+Best Agent AgentTanH/20230327-192241/best1;1150testing:
+ reward -1.0: 0.7100000000000001 percent
+ reward 0.0: 7.35 percent
+ reward 1.0: 91.94 percent
+Best Agent AgentTanH/20230327-192241/best1;1300testing:
+ reward -1.0: 0.38999999999999996 percent
+ reward 0.0: 9.73 percent
+ reward 1.0: 89.88000000000001 percent
+Best Agent best_agent_tiktaktoe_0998/20230327-191103/best1;3300testing:
+ reward -1.0: 0.33 percent
+ reward 0.0: 7.920000000000001 percent
+ reward 1.0: 91.75 percent
+Best Agent best_agent_tiktaktoe_0998/20230327-191103/best1;3400testing:
+ reward -1.0: 0.19 percent
+ reward 0.0: 6.59 percent
+ reward 1.0: 93.22 percent
+Best Agent best_agent_tiktaktoe_0998/20230327-191103/best1;3600testing:
+ reward -1.0: 0.53 percent
+ reward 0.0: 8.43 percent
+ reward 1.0: 91.03999999999999 percent
+Best Agent best_agent_tiktaktoe_0998/20230327-191103/best1;3700testing:
+ reward -1.0: 0.1 percent
+ reward 0.0: 9.34 percent
+ reward 1.0: 90.56 percent

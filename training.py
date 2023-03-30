@@ -39,7 +39,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
         inner_time += time.time() - start
         
         # save model
-        d = 50
+        # d = 50
         if i % d == 0:
             [agent.save_models(i) for agent in agents]
 

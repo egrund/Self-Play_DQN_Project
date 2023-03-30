@@ -138,7 +138,7 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
 
     return rewards
 
-def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, sampling = 10, printing = True, plot = False):
+def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, sampling = 10, printing = True, plot = False, adapting = False):
     """ tests the given agent against opponents
     get differences betwee the opponents with different epsilon values
     
@@ -157,8 +157,9 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])
 
     for e in np.linspace(1,0,opponent_size):
-        #agent.reset_game_balance()
-        #agent.reset_opponent_level()
+        if adapting:
+            agent.reset_game_balance()
+            agent.reset_opponent_level()
         sampler.set_opponent_epsilon(e)
 
         if printing:
@@ -174,8 +175,9 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
             if printing:
                 for i,value in enumerate(unique):
                     print(f"{j}*{batch_size} reward {value}: {counts[i]} percent")
-                #print("Game balance: ", agent.get_game_balance())
-                #print("Opponent level: ", agent.opponent_level.numpy())
+                if adapting:
+                    print("Game balance: ", agent.get_game_balance())
+                    print("Opponent level: ", agent.opponent_level.numpy())
                 print()
 
         unique, counts = only_right_rewards(rewards_list, all_end_results, batch_size * sampling)

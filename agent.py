@@ -214,7 +214,7 @@ class DQNAgent(Agent):
             probs = tf.where(available_actions_bool,probs,-1)
 
         # calculate best action
-        return probs[self.action_choice(probs)]
+        return tf.gather(probs,self.action_choice(probs),axis=-1)
     
     # @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in):
@@ -366,7 +366,7 @@ class AdaptingAgent(Agent):
         return self.action_choice(probs)
 
 class AdaptingDQNAgent(AdaptingAgent):
-    """ Implements a basic DQN Algorithm 
+    """ Implements a DQN algorithm approximating the future expected game balance instead of the future expected reward
     
     Attributes:
         best_agent (DQNAgent): a fully initialized best agent
@@ -569,8 +569,8 @@ class AdaptingDQNAgent(AdaptingAgent):
         copy.target_model.set_weights(np.array(self.target_model.get_weights(),dtype = object))
         return copy
     
-class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
-    """ do not train this agent, only uses some functionality of DQN agent """
+class AdaptingAgent2(AdaptingAgent): 
+    """  """
 
     def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.01), game_balance_max : int = 500):  
         super().__init__(best_agent,game_balance_max)
@@ -587,8 +587,8 @@ class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
             helping = tf.where(probs<0,probs*(-self.calculation_value),probs)
         return tf.argmin(tf.math.abs(helping),axis=-1)
     
-class AdaptingAgent3(AdaptingAgent): # same as AdaptingAgent at the moment
-    """ do not train this agent, only uses some functionality of DQN agent """
+class AdaptingAgent3(AdaptingAgent):
+    """  """
 
     def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.3), game_balance_max : int = 500):
         super().__init__(best_agent,game_balance_max)
@@ -642,6 +642,32 @@ class AdaptingAgent3(AdaptingAgent): # same as AdaptingAgent at the moment
         if not unavailable:
             return self.action_choice(probs, available_actions_bool)
         return self.action_choice(probs)
+    
+class AdaptingAgent4(AdaptingAgent3):
+    """  """
+
+    def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.3), game_balance_max : int = 500):
+        super().__init__(best_agent,calculation_value, game_balance_max)
+        self.calculation_value = calculation_value
+
+    #@tf.function(reduce_retracing=True)
+    def action_choice(self, probs, available_actions_bool = None):
+        """ returns the action that makes self.game_balance in the future closest to 0 """
+        # choose action that makes future game_balance closest to zero
+        # scale the positive action values between 0 and 1, then choose a certain percentage point
+
+        scaled_around_value = tf.subtract(tf.divide(probs,tf.reduce_max(tf.math.abs(probs))), -self.get_game_balance(tensor=True))
+
+        if available_actions_bool != None:
+            scaled_around_value = tf.where(available_actions_bool, scaled_around_value, tf.constant(10.))
+        adapting_action =  tf.argmin(tf.math.abs(scaled_around_value),axis=-1)
+
+        # return best action when we are loosing
+        #boolean_value = tf.where(tf.reduce_max(probs,axis=-1)<tf.constant(0.0),True,False)
+        #best_action = tf.argmax(probs,axis=-1)
+        # tf.where(boolean_value, best_action, adapting_action)
+
+        return adapting_action
 
 class MinMax_Agent (Agent):
     """ 

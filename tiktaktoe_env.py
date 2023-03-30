@@ -50,6 +50,9 @@ class TikTakToeEnv(Env):
         
     move_reward : -0.1
         The reward associated with a move.
+
+    wrong_move_reward : -0.5
+        The reward associated with an unavailable move. 
     """  # noqa: E501
     # class attributes
     num_rows = 3

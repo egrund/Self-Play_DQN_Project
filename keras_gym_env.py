@@ -57,6 +57,12 @@ class ConnectFourEnv(Env):
 
     draw_reward : 0.0
         The reward associated with a draw.
+    
+    move_reward : 0
+        The reward associated with a move.
+
+    wrong_move_reward : -0.5
+        The reward associated with an unavailable move. 
 
     """  # noqa: E501
     # class attributes
@@ -66,6 +72,7 @@ class ConnectFourEnv(Env):
     win_reward = 1.0
     loss_reward = -win_reward
     draw_reward = 0.0
+    move_reward = 0
     wrong_move_reward = -0.5
     action_space = Discrete(num_cols)
     observation_space = MultiDiscrete(
@@ -324,11 +331,11 @@ class ConnectFourEnv(Env):
             for j0 in range(4):
                 j1 = j0 + 4
                 if np.any(np.tensordot(self.filters, s[i0:i1, j0:j1]) == 4):
-                    return True, 1.0
+                    return True, self.win_reward
 
         # check for a draw
         if len(self.available_actions) == 0:
-            return True, 0.0
+            return True, self.draw_reward
 
         # this is what's returned throughout the episode
-        return False, 0.0
+        return False, self.wrong_move_reward

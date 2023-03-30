@@ -8,7 +8,8 @@ import time
 import tqdm
   
 def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, writers : list, epsilon = 1, 
-                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20, testing_size : int = 100):
+                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20, 
+                         testing_size : int = 100):
     """ """
     sampler_time = 0
     inner_time = 0

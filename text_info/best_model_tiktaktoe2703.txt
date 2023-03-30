@@ -37,6 +37,9 @@ unavailable_action_reward = False
 Agent_TanH/20230327-192241 (Fabian Notebook)
 ++++++++++++++++++++++
 
+best rewards at iteration: 
+250, 1150, 1300
+
 env: 
 ***
 TikTakToeEnv, move_reward = 0
@@ -50,7 +53,7 @@ model architecture: 1 agent
 Hyperparameters:
 ***************
 # Hyperparameter
-iterations = 10001
+iterations = 10001 # did 1400
 INNER_ITS = 50 *2
 BATCH_SIZE = 256 #512
 #reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
@@ -105,7 +108,7 @@ unavailable_action_reward = False
 ++++++++++++++++++++++
 agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
 
-max reward 1.0 at iteration: 
+best rewards at iteration: 
 400, 550, 900
 
 ++++++++++++++++++++++

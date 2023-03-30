@@ -1,17 +1,8 @@
-1. 2 agents epsilon/2 gegeneinander, decay = 0.998
-2. 3 agents epsilon/2 gegeneinander, decay = 0.998
-3. epsilon langsamer decreasing, decay = 0.999
-4. penalty für jeden Zug
-    5. bigger model ?
-    6. not -1 reward
-7. no dropout 
-
-1. smaller discount factor
-2. batch size 64
-3. model having linear filters
-
-1. test giving negative reward for not available actions
-
-1. even smaller discount factor
-2. other activation function
-3. no unavailalbe actions in Qmax
+1. simple adapting 
+2. hyperparameter in paper and results of model 0.99, plots from tensorboard
+3. find tf.function problem
+4. add model link to paper
+5. realistic main game with opponents 
+6. code polish : remove debugging comments, improve readabilitiy
+7. paper introduction & related approaches
+8. 

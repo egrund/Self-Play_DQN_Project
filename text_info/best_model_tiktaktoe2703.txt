@@ -11,7 +11,7 @@ TikTakToeEnv, move_reward = 0
 
 model architecture: 1 agent
 ******************
-- 1 Block 3 layers 128 filters 3x3
+- 1 Block 1 layers 128 filters 3x3
 - dense 64
 - output tanh
 
@@ -46,7 +46,7 @@ TikTakToeEnv, move_reward = 0
 
 model architecture: 1 agent
 ******************
-- 1 Block 3 layers 128 filters 3x3
+- 1 Block 1 layers 128 filters 3x3
 - dense 64
 - output default
 
@@ -124,7 +124,7 @@ TikTakToeEnv, move_reward = 0
 
 model architecture: 1 agent
 ******************
-- 1 Block 3 layers 128 filters 3x3
+- 1 Block 1 layers 128 filters 3x3
 - dense 64
 - output default
 

@@ -105,7 +105,9 @@ unavailable_action_reward = False
 ++++++++++++++++++++++
 agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
 
-max about 99.4% win at it 400
+max reward 1.0 at iteration: 
+400, 550, 900
+
 ++++++++++++++++++++++
 
 env: 

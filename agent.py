@@ -12,7 +12,7 @@ class Agent:
     def get_do_random(self):
         return self.do_random
 
-    def action_choice(self, probs):
+    def action_choice(self, probs, available_actions_bool = None):
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
         return tf.argmax(probs,axis=-1)
@@ -216,7 +216,7 @@ class DQNAgent(Agent):
         # calculate best action
         return probs[self.action_choice(probs)]
     
-    @tf.function(reduce_retracing=True)
+    # @tf.function(reduce_retracing=True)
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in):
         """ Calculates the TD error for prioritized experience replay 
         
@@ -332,8 +332,8 @@ class AdaptingAgent(Agent):
         self.opponent_level = tf.constant(-1.)
 
     #@tf.function(reduce_retracing=True)
-    def action_choice(self, probs):
-        """ returns the action that makes self.game_balance in the future closest to 0 """
+    def action_choice(self, probs, available_actions_bool = None):
+        """ returns the action that makes the future reward closest to 0 """
         # choose action that makes future game_balance closest to zero
         return tf.argmin(tf.math.abs(probs),axis=-1)
     
@@ -577,7 +577,7 @@ class AdaptingAgent2(AdaptingAgent): # same as AdaptingAgent at the moment
         self.calculation_value = calculation_value
 
     #@tf.function(reduce_retracing=True)
-    def action_choice(self, probs):
+    def action_choice(self, probs, available_actions_bool = None):
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
         # scale positive values a little smaller so the propertion of loosing and winning is more balanced
@@ -592,19 +592,53 @@ class AdaptingAgent3(AdaptingAgent): # same as AdaptingAgent at the moment
         self.calculation_value = calculation_value
 
     #@tf.function(reduce_retracing=True)
-    def action_choice(self, probs):
+    def action_choice(self, probs, available_actions_bool = None):
         """ returns the action that makes self.game_balance in the future closest to 0 """
         # choose action that makes future game_balance closest to zero
         # scale the positive action values between 0 and 1, then choose a certain percentage point
 
-        scaled_around_value = tf.subtract(tf.divide(probs,tf.reduce_max(probs)), self.calculation_value)
+        scaled_around_value = tf.subtract(tf.divide(probs,tf.reduce_max(tf.math.abs(probs))), self.calculation_value)
+
+        if available_actions_bool != None:
+            scaled_around_value = tf.where(available_actions_bool, scaled_around_value, tf.constant(10.))
         adapting_action =  tf.argmin(tf.math.abs(scaled_around_value),axis=-1)
 
         # return best action when we are loosing
-        boolean_value = tf.where(tf.reduce_max(probs,axis=-1)<tf.constant(0.0),True,False)
-        best_action = tf.argmax(probs,axis=-1)
+        #boolean_value = tf.where(tf.reduce_max(probs,axis=-1)<tf.constant(0.0),True,False)
+        #best_action = tf.argmax(probs,axis=-1)
+        # tf.where(boolean_value, best_action, adapting_action)
 
-        return tf.where(boolean_value, best_action, adapting_action)
+        return adapting_action
+    
+    #@tf.function(reduce_retracing=True)
+    def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
+        """ 
+        selects the currently best action using the model 
+        
+        Parameters:
+            epsilon (float):
+            observations (array): (batch, 7, 7) using FourConnect (other env possible)
+            available_actions (list): containing all the available actions for each batch observation
+            available_actions_bool (list): containing for every index whether the action with this value is in available actions
+            unavailable (bool): whether the agent is allowed to choose unavailable actions
+        
+        returns: 
+            the chosen best action for each batch element (tf.Tensor)
+        """
+        
+        probs = self.model(observations, training = False)
+
+        # add the following print if playing against the agent to get information about it's decision
+        #print("Model results: \n", probs.numpy().reshape((3,3)))
+        
+        # remove all unavailable actions
+        # if not unavailable and available_actions_bool != None:
+            # probs = tf.where(available_actions_bool, probs, np.nan)
+
+        # calculate best action
+        if not unavailable:
+            return self.action_choice(probs, available_actions_bool)
+        return self.action_choice(probs)
 
 class MinMax_Agent (Agent):
     """ 

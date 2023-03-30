@@ -7,7 +7,7 @@ import random as rnd
 from env_wrapper2 import SelfPLayWrapper
 from tiktaktoe_env import TikTakToeEnv 
 
-from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent3
+from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent, AdaptingAgent3, AdaptingAgent4
 from buffer import Buffer
 from training import train_self_play_best
 from testing import testing_adapting_dif_epsilon_opponents
@@ -55,7 +55,7 @@ BEST_INDEX = 3400
 HIDDEN_UNITS = [64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
-GAME_BALANCE_MAX = 25
+GAME_BALANCE_MAX = 100
 
 #Subfolder for Logs
 config_name = "adapting_test_new"
@@ -85,8 +85,8 @@ best_agent = DQNAgent(env,
         output_activation=output_activation)
 best_agent.load_models(BEST_INDEX)
 
-adapting_agent = AdaptingAgent3(best_agent=best_agent,
-                            calculation_value = tf.constant(0.5),
+adapting_agent = AdaptingAgent4(best_agent=best_agent,
+                            calculation_value = tf.constant(0.), # has to be a float
                             #env = env, 
                             #buffer = None,
                             #batch = BATCH_SIZE,
@@ -101,7 +101,7 @@ adapting_agent = AdaptingAgent3(best_agent=best_agent,
 
 # Testing Hyperparameter
 #**************************
-TESTING_SIZE = 100
+TESTING_SIZE = GAME_BALANCE_MAX # change at game balance max
 TESTING_SAMPLING = 10 # how often to sample testing_size many games
 OPPONENT_SIZE = 5 # how many different epsilon values will be tested
 
@@ -111,8 +111,9 @@ rewards = testing_adapting_dif_epsilon_opponents(adapting_agent,
                                                  opponent_size = OPPONENT_SIZE, 
                                                  batch_size=TESTING_SIZE, 
                                                  sampling = TESTING_SAMPLING, 
-                                                 printing = False,
-                                                 plot=True)
+                                                 printing = True,
+                                                 plot=True,
+                                                 adapting = True)
 
 
 

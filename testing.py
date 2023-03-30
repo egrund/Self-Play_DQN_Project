@@ -195,7 +195,7 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         printing (bool): if you want the results printed
     """
 
-    sampler = Sampler(batch_size, agent, env_class, opponent,adapting_agent=False) #True)
+    sampler = Sampler(batch_size, agent, env_class, opponent,adapting_agent=adapting) 
     rewards = []
     env = SelfPLayWrapper(env_class)
     all_end_results = np.array([env.loss_reward,env.draw_reward,env.win_reward])

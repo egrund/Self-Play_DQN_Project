@@ -53,6 +53,6 @@ axes.grid(True,color = 'black', linestyle="--",linewidth=0.5, alpha = 0.5)
 
 # add the chosen point to plot
 if point != None:
-    plt.vlines(5300,axes.get_ylim()[0],axes.get_ylim()[1],colors="red")
+    plt.vlines(point,axes.get_ylim()[0],axes.get_ylim()[1],colors="red")
 
 plt.show()

@@ -4,6 +4,15 @@ import time
 class Buffer:
     """ 
     Implemens a replay buffer for our DQNAgent class. Can use prioritized experience replay. 
+
+    Attributes:
+        capacity (int): the maximum capacity
+        min_size (int): the minimum filling size for starting training
+        current_size (int): the current size of the buffer
+        sarsd_list (list): contains the data
+        priorities (np.array): contains the priorities for the sarsd_list elements with the same index
+        last_indices (np.array): contains the indices of the last minibatch, for updating the priorities afterwards
+        empty (bool): If the buffer is empty
     """
 
     def __init__(self, capacity, min_size):
@@ -24,11 +33,6 @@ class Buffer:
             state, action, reward, new_state, done, available_next_action_bool given as a tuple
         ______________
         
-        
-        Returns:
-        ______________
-        none
-        ______________
         """
         # if there is data to add, buffer is not empty anymore
         
@@ -104,12 +108,7 @@ class Buffer:
         
         norm_priors = self.normalize_priorities()
 
-        #print("Priorities max: ",np.max(self.priorities))
-        #print("Priorities min: ", np.min(self.priorities))
-        #print("Priorities max after normalization: ",np.max(norm_priors))
-        #print("Priorities min after normalization: ", np.min(norm_priors))
-
-        # just in case the error message ever occurs after 8 hours again
+        # just in case the error message ever occurs after 8 hours again (if the values get too small, now we have np.longdouble)
         try:
             output = rnd.choices([i for i in range(0,self.current_size)],weights = norm_priors,k=batch_size)
         except ValueError:
@@ -122,7 +121,12 @@ class Buffer:
         return output
 
     def normalize_priorities(self):
-        """ normalize the priorities so they can be given as weights for random.choice """
+        """ 
+        normalize the priorities so they can be given as weights for random.choice
+         
+        return: 
+            the normalized priorities as np.array
+        """
         if self.empty:
             raise RuntimeError("The buffer has to be filled to normalize priorities.")
         

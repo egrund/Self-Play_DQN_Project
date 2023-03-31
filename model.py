@@ -36,7 +36,10 @@ class MyCNNBlock(tf.keras.layers.Layer):
             layers (list) = how many Conv2D you want, and for each what kernel_size
             filters (int) = how many filters the Conv2D layers should have
             global_pool (boolean) = global average pooling at the end if True else MaxPooling2D
-            denseNet (boolean) = whether we want to implement a denseNet (creates a concatenate layer if True)
+            mode (str) = whether we want to implement a denseNet or a resNet
+            normalization (bool) = whether we want to use BatchNormalization
+            reg (tensorflow Regularizer) = the Regularizer to use
+            dropout_layer (tf.keras.layers.Dropout): The dropout layer to use
         """
 
         super(MyCNNBlock, self).__init__()
@@ -79,8 +82,11 @@ class MyCNN_RL(tf.keras.Model):
             output_units (int) = the number of wanted output units
             hidden_activation (function)= the activation function for the hidden layers
             output_activation (function)= the activation fuction for the output layer
-            dropout (0<= int <1) = rate of dropout for after input and after dense
+            optimizer (tf.keras.optimizers.Optimizer): The optimizer to use
+            loss (tf.keras.losses.Loss): The loss to use
+            dropout_rate (0<= int <1) = rate of dropout for after input and after dense
             normalisation(boolean) = if True use Batchnorm
+            gamma (tf.constant) float = The discount factor for future rewards. 
         """
 
         super(MyCNN_RL, self).__init__()

@@ -2,4 +2,4 @@
 3. find tf.function problem
 5. realistic main game with opponents 
 7. paper introduction & related approaches
-8. 
+8. tabelle 

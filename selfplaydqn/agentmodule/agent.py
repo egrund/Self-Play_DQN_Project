@@ -64,7 +64,7 @@ class Agent:
         # if we also let the random action be unavailable sampling just takes very much longer. 
         random_actions = [np.random.choice(a) for a in available_actions]
 
-        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions, available_actions_bool, unavailable).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions = available_actions, available_actions_bool = available_actions_bool, unavailable = unavailable).numpy()
         return np.where(random_action_where,random_actions,best_actions)
     
     def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, 
@@ -122,7 +122,7 @@ class DQNAgent(Agent):
                               dropout_rate = dropout_rate, normalisation = normalisation, gamma = gamma)
         
         # build models
-        obs = tf.expand_dims(env.reset(),axis=0)
+        obs = tf.keras.layers.Input(shape=env.reset().shape)
         env.close()
         self.model(obs)
         self.target_model(obs)
@@ -212,10 +212,9 @@ class DQNAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable and available_actions_bool != None:
-            probs = tf.where(available_actions_bool,probs,tf.reduce_min(probs)-1)
+            probs = tf.where(available_actions_bool,probs, tf.reduce_min(probs)-1)
 
         # calculate best action
-        # return tf.argmax(probs, axis = -1)
         return self.action_choice(probs)
     
     #@tf.function
@@ -442,7 +441,7 @@ class AdaptingDQNAgent(AdaptingAgent):
                  loss = loss_function, gamma = gamma)
         
         # build models
-        obs = tf.expand_dims(env.reset(),axis=0)
+        obs = tf.keras.layers.Input(shape=env.reset().shape)
         self.model(obs, agent = self)
         self.target_model(obs, agent = self)
         self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))

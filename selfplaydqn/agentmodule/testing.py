@@ -205,13 +205,13 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
 
     return rewards
 
-def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, 
+def testing_adapting_dif_epsilon_opponents(agent : Agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, 
                                            sampling = 10, printing = True, plot = False, adapting = False):
     """ tests the given agent against opponents
     get differences betwee the opponents with different epsilon values
     
     Parameters: 
-        agent (AdaptingDQNAgent): the agent to test
+        agent (Agent): the agent to test
         env_class: The env class to use
         opponent (Agent): besta agent to use as opponents with different epsilon values
         batch_size (int): over how many games to play the average reward from at the same time

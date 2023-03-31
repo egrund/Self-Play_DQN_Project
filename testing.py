@@ -9,12 +9,19 @@ from agent import RandomAgent, Agent
 from sampler import Sampler
 from env_wrapper2 import SelfPLayWrapper
 
-def only_right_rewards(reward, right_reward_values, size):
-    """ makes sure in the returns are only the rewards from right-reward_values with their proportion"""
+def only_right_rewards(reward, right_reward_values, size, index_calculate_new = 1):
+    """ makes sure in the returns are only the rewards from right-reward_values with their proportion 
+    
+    Parameters:
+        reward (np.array): an array containing all the rewards gotten
+        right_reward_values (np.array): contains all the rewards we want percentage values for in the output
+        size (int): how many games were played to get this many rewards
+        index_calculate_new (i): the index which should be calculated from the percentage of the other rewards. e.g. draw reward as it is the same as move reward
+    """
 
     unique, counts = np.unique(reward, return_counts=True)
 
-    # if not all rewards are in reward, add the rest with count 0 
+    # add all rewards, the ones not in reward with count 0 
     counts_list = []
     for a in right_reward_values:
         if a in unique:
@@ -26,7 +33,9 @@ def only_right_rewards(reward, right_reward_values, size):
     counts = np.array(counts_list)
     
     # count 0 from how many 1 and -1
-    counts[1] = size - counts[0] - counts[2] # only needed if move reward is the same as draw reward
+    counts[index_calculate_new] = size - np.sum(counts) + counts[index_calculate_new]  # only needed if move reward is the same as draw reward
+
+    # make a percentage out of the values
     proportion = counts / size * 100
     return unique, proportion
 
@@ -39,11 +48,13 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
         size (int): over how many games to take the average reward
         printing (bool): if you want the results printed
         load (tuple): (start, stop, step) if you want to load and test several saved models of the given agent  
+        plot(bool): Whether the results should be plotted
     """
 
-    if load:
+    if load != None:
         start, stop, step = load
     else: 
+        # if load == None we just do one step
         start, stop, step = 0,1,1
 
     random_agent = RandomAgent()
@@ -88,8 +99,9 @@ def testing_dif_agents(agent, env_class, size = 100, load = None, printing = Tru
         agent (DQNAgent): the agent to test
         env_class: The env class to use
         size (int): over how many games to take the average reward
-        printing (bool): if you want the results printed
         load (tuple): (config_list, indices_list) if you want to load and test several saved models of the given agent  
+        printing (bool): if you want the results printed
+        plot(bool): Whether the results should be plotted
     """
 
     config_list, indices_list = load
@@ -140,11 +152,13 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
         sampling (int): how often to sample batch_size many games after each other
         printing (bool): if you want the results printed
         load (tuple): (start, stop, step) if you want to load and test several saved models of the given agent  
+        plot(bool): Whether the results should be plotted
     """
 
-    if load:
+    if load != None:
         start, stop, step = load
     else: 
+        # if load == None we just do one step
         start, stop, step = 0,1,1
 
     random_agent = RandomAgent()
@@ -193,7 +207,8 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
 
     return rewards
 
-def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, sampling = 10, printing = True, plot = False, adapting = False):
+def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, opponent_size = 10, batch_size = 100, 
+                                           sampling = 10, printing = True, plot = False, adapting = False):
     """ tests the given agent against opponents
     get differences betwee the opponents with different epsilon values
     
@@ -201,9 +216,11 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         agent (AdaptingDQNAgent): the agent to test
         env_class: The env class to use
         opponent (Agent): besta agent to use as opponents with different epsilon values
-        batch_size (int): over how many games to take the average reward
+        batch_size (int): over how many games to play the average reward from at the same time
         sampling (int): how often to sample batch_size many games after each other
         printing (bool): if you want the results printed
+        plot(bool): Whether the results should be plotted
+        adapting (bool): Whether the agent should get in game information about the average reward
     """
 
     sampler = Sampler(batch_size, agent, env_class, opponent,adapting_agent=adapting) 

@@ -72,6 +72,9 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
         rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
         axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Index", y="Percentage", hue="Reward")
+        axes.set_xlabel("Index",size="xx-large")
+        axes.set_ylabel("Percentage",size="xx-large")
+        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large")
         axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
@@ -117,6 +120,9 @@ def testing_dif_agents(agent, env_class, size = 100, load = None, printing = Tru
         rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "config_index": r[2] + str(r[3])} for j in range(3)] for r in rewards]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
         axes = sns.barplot(rewards_df, linewidth=2, palette= "tab10",y="config_index", x="Percentage", hue="Reward", orient="h")
+        axes.set_xlabel("Percentage",size="xx-large")
+        #axes.set_ylabel("config_index",size="xx-large")
+        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large")
         axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
@@ -179,6 +185,9 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
         rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
         axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Index", y="Percentage", hue="Reward")
+        axes.set_xlabel("Index",size="xx-large")
+        axes.set_ylabel("Percentage",size="xx-large")
+        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large")
         axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
@@ -234,6 +243,9 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Epsilon":idx} for j in range(3)] for idx,r in zip(np.linspace(1,0,opponent_size),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
         axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Epsilon", y="Percentage", hue="Reward")
+        axes.set_xlabel("Epsilon",size="xx-large")
+        axes.set_ylabel("Percentage",size="xx-large")
+        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large")
         axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()

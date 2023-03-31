@@ -9,22 +9,22 @@ path = "model/agent_linear_decay099/20230327-185908/tensorboard_data/"
 game  = "TikTakToe"
 
 # for creating a loss plot
-"""
+#"""
 files = ["loss"]
 plot_title = "Loss " + game
 y_value = "Loss"
 hue_value = None
 point = None
-"""
+#"""
 
 # for creating a reward plot
-# """
+"""
 files = ["reward1", "reward0", "reward-1"]
 plot_title = "Rewards " + game
 y_value = "Percentage"
 hue_value = "Reward"
 point =  5300 # The agent you chose to be shown in the plot
-# """
+"""
 
 # Code
 #*****
@@ -41,7 +41,11 @@ else:
 
 
 axes = sns.lineplot(dataframe, linewidth=2, palette= "tab10",x="Step", y=y_value, hue = hue_value)
-axes.set(title=plot_title)
+axes.set_title(plot_title, size="xx-large")
+axes.set_xlabel("Step",size="xx-large")
+axes.set_ylabel(y_value,size="xx-large")
+if hue_value != None:
+    axes.legend(prop={'size':15}, title = hue_value, title_fontsize = "xx-large")
 if y_value == "Percentage":
     axes.set_ylim(0,100)
     axes.set_yticks(range(0,101,10))

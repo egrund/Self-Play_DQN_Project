@@ -1,8 +1,6 @@
 from agentmodule.model import MyCNN_RL, MyMLP_RL
 import tensorflow as tf
 import numpy as np
-import random as rnd
-import time
 
 class Agent:
     """

@@ -1,4 +1,12 @@
-from envs.env_wrapper2 import SelfPLayWrapper
+from envs.envwrapper2 import SelfPLayWrapper
+from agentmodule.agent import DQNAgent
+from agentmodule.buffer import Buffer
+from agentmodule.training import train_self_play_best
+
+import numpy as np
+import datetime
+import tensorflow as tf
+import random as rnd
 
 # Choose the env at the top
 #**************************
@@ -7,15 +15,6 @@ from envs.env_wrapper2 import SelfPLayWrapper
 # from envs.keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
 # from envs.keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
 from envs.tiktaktoe_env import TikTakToeEnv as GameEnv
-
-import numpy as np
-import datetime
-import tensorflow as tf
-import random as rnd
-
-from agentmodule.agent import DQNAgent
-from agentmodule.buffer import Buffer
-from agentmodule.training import train_self_play_best
 
 # seeds
 seed = 42
@@ -27,8 +26,7 @@ tf.random.set_seed(seed)
 #*****************
 iterations = 10001
 INNER_ITS = 50 *2
-BATCH_SIZE = 256 #512
-#reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
+BATCH_SIZE = 256 
 
 epsilon = 1
 EPSILON_MIN = 0.01
@@ -43,14 +41,14 @@ BATCH_SIZE_SAMPLING = 512
 SAMPLING = 2
 AGENT_NUMBER = 1 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.3)
-unavailable_action_reward = False # only TikTakToe
+unavailable_action_reward = False
 D = 20 # how often to save and test the agent
 
 # Model architecture
 #********************
-CONV_KERNEL = [4,4]
+CONV_KERNEL = [3]
 FILTERS = 128
-HIDDEN_UNITS = [64,64]
+HIDDEN_UNITS = [64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
 
@@ -58,7 +56,6 @@ output_activation = None
 config_name = "test"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# time_string = ""
 
 agents = []
 writers = []

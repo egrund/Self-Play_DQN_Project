@@ -1,7 +1,7 @@
 from envs.sampler import Sampler
-from testing import testing, testing_adapting
+from agentmodule.testing import testing, testing_adapting
 from agentmodule.agent import RandomAgent, Agent
-from envs.env_wrapper2 import SelfPLayWrapper
+from envs.envwrapper2 import SelfPLayWrapper
 import tensorflow as tf
 import numpy as np
 import time

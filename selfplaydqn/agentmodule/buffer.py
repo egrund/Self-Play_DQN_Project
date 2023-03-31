@@ -1,6 +1,6 @@
 import random as rnd
 import numpy as np
-import time
+
 class Buffer:
     """ 
     Implemens a replay buffer for our DQNAgent class. Can use prioritized experience replay. 

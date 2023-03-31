@@ -1,4 +1,4 @@
-from env_wrapper2 import SelfPLayWrapper
+from envs.envwrapper2 import SelfPLayWrapper
 import numpy as np
 import time
 import tensorflow as tf

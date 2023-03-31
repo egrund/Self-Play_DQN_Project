@@ -1,13 +1,11 @@
 import numpy as np
-import datetime
-import tensorflow as tf
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 from agentmodule.agent import RandomAgent, Agent
 from envs.sampler import Sampler
-from envs.env_wrapper2 import SelfPLayWrapper
+from envs.envwrapper2 import SelfPLayWrapper
 
 def only_right_rewards(reward, right_reward_values, size, index_calculate_new = 1):
     """ makes sure in the returns are only the rewards from right-reward_values with their proportion 

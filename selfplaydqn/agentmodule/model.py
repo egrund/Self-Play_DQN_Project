@@ -15,13 +15,13 @@ class MyCNNNormalizationLayer(tf.keras.layers.Layer):
         self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
         self.activation = tf.keras.layers.Activation("relu")
 
-    #@tf.function(reduce_retracing=True)
+    #@tf.function
     def call(self,x,training=None):
         """ forward propagation """
 
         x = self.conv_layer(x)
-        if self.norm_layer:
-            x = self.norm_layer(x,training)
+        #if self.norm_layer != None:
+        x = self.norm_layer(x,training)
         x = self.activation(x)
 
         return x
@@ -46,25 +46,40 @@ class MyCNNBlock(tf.keras.layers.Layer):
         self.dropout_layer = dropout_layer
         self.conv_layers =  [MyCNNNormalizationLayer(filters,normalization, reg, k) for k in layers]
         self.mode = mode
-        switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
-        self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
-        self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else (tf.keras.layers.MaxPooling2D(pool_size=2, strides=2) if global_pool is not None else None)
+        #switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
+        #self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
+        self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2) #if global_pool is not None else None)
 
-    #@tf.function(reduce_retracing=True)
+    # @tf.function#(reduce_retracing=True)
     def call(self,inputs,training=None):
         """ forward propagation of this block """
         x = inputs
-        for i, layer in enumerate(self.conv_layers):
+        for layer in self.conv_layers:
             x = layer(x, training)
-            if(i==0 and self.mode == "res"): # for resnet add output of first layer to final output, not input of first layer
-                inputs = x
-            if self.dropout_layer:
+            if self.dropout_layer != None:
                 x = self.dropout_layer(x, training)
-        if(self.extra_layer is not None):
-            x = self.extra_layer([inputs, x])
 
-        if self.pool is not None:
-            x = self.pool(x)
+        #if self.pool is not None:
+        x = self.pool(x)
+        return x
+    
+class MyDenseBlock(tf.keras.layers.Layer):
+    """ a block of 2 dense layers """
+
+    def __init__(self, hidden_units : list = [64,64],hidden_activation = tf.nn.relu,output_units = None, output_activation = None):
+        super(MyDenseBlock, self).__init__()
+
+        self.dense1 = [tf.keras.layers.Dense(h, activation=hidden_activation) for h in hidden_units]
+        self.out = tf.keras.layers.Dense(output_units, activation=output_activation) if output_units!= None else None
+
+    @tf.function # this works
+    def call(self, inputs, training = None):
+        """ forward propagation of the ANN """
+        x = inputs
+        for layer in self.dense1:
+            x = layer(x)
+        if self.out != None:
+            x = self.out(x)
         return x
 
 class MyCNN_RL(tf.keras.Model):
@@ -78,7 +93,7 @@ class MyCNN_RL(tf.keras.Model):
         Parameters: 
             conv_kernel (list) = list containing one element for each conv layer in one block, values are the kernel size (each can be a 2D tuple or an int)
             filters (int) = the amount of filters in each layer of the conv block
-            hidden_units (list) = list containing one element for each hidden layer and the values are the units of each layer 
+            hidden_units (list) = list containing one element for each hidden layer and the values are the units of each layer (max length of 2)
             output_units (int) = the number of wanted output units
             hidden_activation (function)= the activation function for the hidden layers
             output_activation (function)= the activation fuction for the output layer
@@ -94,8 +109,7 @@ class MyCNN_RL(tf.keras.Model):
         self.dropout_rate = dropout_rate
         self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
         self.block = MyCNNBlock(layers = conv_kernel, filters = filters, global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
-        self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
-        self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
+        self.dense_block = MyDenseBlock(hidden_units, hidden_activation, output_units, output_activation)
 
         self.optimizer = optimizer
         self.loss = loss
@@ -109,14 +123,12 @@ class MyCNN_RL(tf.keras.Model):
         for m in self.metric:
             m.reset_states()
 
-    #@tf.function(reduce_retracing=True)
-    def call(self, states, training = False, intermediate = False):
+    # @tf.function#(reduce_retracing=True) # does retracing
+    def call(self, states, training = None, intermediate = False):
         """ forward propagation of the ANN """
-        x= self.block(states, training = training)
+        x = self.block(states, training = training)
         inter = x # save intermediate result if we want to output it
-        for layer in self.dense_list:
-            x = layer(x)
-        x = self.out(x)
+        x = self.dense_block(x)
         if intermediate:
             return x, inter
         return x
@@ -177,11 +189,8 @@ class MyMLP_RL(tf.keras.Model):
         super(MyMLP_RL, self).__init__()
         
         self.concat_layer = tf.keras.layers.Concatenate(axis=-1)
-        self.dense_list1 = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
-        self.out1 = tf.keras.layers.Dense(1, activation=hidden_activation)
-
-        self.dense_list = [tf.keras.layers.Dense(units, activation=hidden_activation) for units in hidden_units ]
-        self.out = tf.keras.layers.Dense(output_units, activation=output_activation)
+        self.dense_block1 = MyDenseBlock(hidden_units, hidden_activation, 1, hidden_activation)
+        self.dense_block2 = MyDenseBlock(hidden_units, hidden_activation, output_units, output_activation)
 
         self.optimizer = optimizer
         self.loss = loss
@@ -196,7 +205,7 @@ class MyMLP_RL(tf.keras.Model):
             m.reset_states()
 
     #@tf.function(reduce_retracing=True)
-    def call(self, states, available_actions_bool = None, training = False, agent = None, opponent_level = None, game_balance = None):
+    def call(self, states, available_actions_bool = None, training = None, agent = None, opponent_level = None, game_balance = None):
         """ forward propagation of the ANN """
 
         if agent == None:
@@ -213,17 +222,15 @@ class MyMLP_RL(tf.keras.Model):
         else:
             action_choice_best = tf.expand_dims(tf.repeat(tf.constant(0.,dtype=tf.float32),states.shape[0]),axis=-1)
 
-        # calculate the opponent level
+        return self.calculations(best_probs, inter, opponent_level, game_balance, action_choice_best, training)
+    
+    @tf.function
+    def calculations(self, best_probs, inter, opponent_level, game_balance, action_choice_best, training = None,):
         x = self.concat_layer((inter, opponent_level, game_balance))
-        for layer in self.dense_list1:
-            x = layer(x)
-        new_opponent_level = self.out1(x)
+        new_opponent_level = self.dense_block(x)
 
         x = self.concat_layer((best_probs, inter, new_opponent_level, action_choice_best))
-
-        for layer in self.dense_list:
-            x = layer(x)
-        x = self.out(x)
+        x = self.dense_block2(x)
         return x, new_opponent_level
 
     #@tf.function(reduce_retracing=True)

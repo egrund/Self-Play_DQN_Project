@@ -48,9 +48,9 @@ D = 20 # how often to save and test the agent
 
 # Model architecture
 #********************
-CONV_KERNEL = [3]
+CONV_KERNEL = [3,3]
 FILTERS = 128
-HIDDEN_UNITS = [64]
+HIDDEN_UNITS = [64,64]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
 

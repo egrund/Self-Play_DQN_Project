@@ -190,7 +190,7 @@ class DQNAgent(Agent):
         
         return loss_value
 
-    #@tf.function
+    # @tf.function
     def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False):
         """ 
         selects the currently best action using the model 
@@ -217,7 +217,7 @@ class DQNAgent(Agent):
         # calculate best action
         return self.action_choice(probs)
     
-    #@tf.function
+    @tf.function # works
     def select_best_action_value(self, observations, available_actions_bool, unavailable : bool = False):
         """ 
         selects the best next action Qsa given observations 
@@ -234,7 +234,7 @@ class DQNAgent(Agent):
         """
         probs = self.target_model(observations,training = False)
 
-        # add the following print if playing against the agent to get information about it's decision
+        # add the following print if playing against the agent to get information about it's decision (remember to remove tf.function first)
         #print("Model results: \n", probs.numpy().reshape((3,3)))
         
         # remove all unavailable actions
@@ -244,7 +244,7 @@ class DQNAgent(Agent):
         # calculate best action
         return tf.gather(probs,self.action_choice(probs),axis=-1)
     
-    # @tf.function(reduce_retracing=True)
+    @tf.function # works
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in):
         """ Calculates the TD error for prioritized experience replay 
         
@@ -441,7 +441,8 @@ class AdaptingDQNAgent(AdaptingAgent):
                  loss = loss_function, gamma = gamma)
         
         # build models
-        obs = tf.keras.layers.Input(shape=env.reset().shape)
+        #obs = tf.keras.layers.Input(shape=env.reset().shape)
+        obs = tf.expand_dims(env.reset(),axis=0)
         self.model(obs, agent = self)
         self.target_model(obs, agent = self)
         self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))
@@ -507,7 +508,7 @@ class AdaptingDQNAgent(AdaptingAgent):
         
         return loss_value
 
-    #@tf.function(reduce_retracing=True)
+    # @tf.function(reduce_retracing=True)
     def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
         """ 
         selects the currently best action using the model 

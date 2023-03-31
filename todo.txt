@@ -1,5 +1,8 @@
 1. simple adapting analysis results
-3. find tf.function problem
-5. realistic main game with opponents 
 7. paper introduction & related approaches
+
 8. tabelle 
+
+3. find tf.function problem
+
+5. realistic main game with opponents 

@@ -69,11 +69,8 @@ AGENT_NUMBER = 1 # how many agents will play against each other while training
 discount_factor_gamma = tf.constant(0.3)
 unavailable_action_reward = False
 
-
-
-
 ++++++++++++++++++++++
-3agents_linear/20230328-21 (Eosandra Laptop)
+3agents_linear/20230328-21... (Eosandra Laptop)
 
 max about 94% win
 ++++++++++++++++++++++

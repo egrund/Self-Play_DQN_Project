@@ -1,4 +1,4 @@
-from tiktaktoe_env import TikTakToeEnv
+from envs.tiktaktoe_env import TikTakToeEnv
 import numpy as np
 
 env = TikTakToeEnv()

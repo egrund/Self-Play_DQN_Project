@@ -1,16 +1,16 @@
-from keras_gym_env import ConnectFourEnv
+from envs.keras_gym_env import ConnectFourEnv
 import numpy as np
 import datetime
 import tensorflow as tf
 import random as rnd
 
-from env_wrapper2 import SelfPLayWrapper
-from tiktaktoe_env import TikTakToeEnv 
+from envs.env_wrapper2 import SelfPLayWrapper
+from envs.tiktaktoe_env import TikTakToeEnv 
 
-from agent import DQNAgent
-from buffer import Buffer
-from training import train_self_play_best
-from testing import testing, testing_dif_agents
+from agentmodule.agent import DQNAgent
+from agentmodule.buffer import Buffer
+from agentmodule.training import train_self_play_best
+from agentmodule.testing import testing, testing_dif_agents
 
 ### from env_wrapper import ConnectFourSelfPLay
 # seeds

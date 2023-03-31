@@ -1,5 +1,4 @@
 from env_wrapper2 import SelfPLayWrapper
-from agent import Agent
 import numpy as np
 import time
 import tensorflow as tf
@@ -20,7 +19,7 @@ class Sampler:
             Also there is information about the average rewards of the past and the opponents level (decided by the agent) added to the buffer. 
     """
 
-    def __init__(self,batch,agent : Agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False, adapting_agent : bool = False):
+    def __init__(self,batch,agent, env_class, opponent,opponent_epsilon : float = 0, unavailable_in : bool = False, adapting_agent : bool = False):
 
         self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
@@ -31,7 +30,7 @@ class Sampler:
         self.unavailable_in = unavailable_in
         self.adapting_agent = adapting_agent
 
-    def set_opponent(self, opponent : Agent):
+    def set_opponent(self, opponent):
         """ sets a new single opponent """
         [env.set_opponent(opponent) for env in self.envs]
         self.opponent = opponent 

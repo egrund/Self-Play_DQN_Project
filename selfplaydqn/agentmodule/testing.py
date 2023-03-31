@@ -5,9 +5,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from agent import RandomAgent, Agent
-from sampler import Sampler
-from env_wrapper2 import SelfPLayWrapper
+from agentmodule.agent import RandomAgent, Agent
+from envs.sampler import Sampler
+from envs.env_wrapper2 import SelfPLayWrapper
 
 def only_right_rewards(reward, right_reward_values, size, index_calculate_new = 1):
     """ makes sure in the returns are only the rewards from right-reward_values with their proportion 
@@ -270,8 +270,8 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
 
 
 if __name__ == "__main__":
-    from keras_gym_env import ConnectFourEnv
-    from tiktaktoe_env import TikTakToeEnv
+    from envs.keras_gym_env import ConnectFourEnv
+    from envs.tiktaktoe_env import TikTakToeEnv
 
     # hyperparameter for testing
     AV = 10000 # how many games to play for each model to test

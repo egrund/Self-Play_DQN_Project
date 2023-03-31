@@ -1,8 +1,5 @@
-1. simple adapting 
-2. hyperparameter in paper and results of model 0.99, plots from tensorboard
+1. simple adapting analysis results
 3. find tf.function problem
-4. add model link to paper
 5. realistic main game with opponents 
-6. code polish : remove debugging comments, improve readabilitiy
 7. paper introduction & related approaches
 8. 

@@ -1,4 +1,3 @@
-from agent import Agent
 import tensorflow as tf
 from gym import Env
 import numpy as np
@@ -12,9 +11,11 @@ class SelfPLayWrapper(Env):
         env (gym.Env): the gym env to wrap arount, has to be a 2 player game
         opponent (Agent): has to be an agent
         epsilon (float): the epsilon value for the epsilon greedy policy
+        first_reward: will be used to save the reward, the agent got until the oponent did its step
+        last_wrong: will be used to save whether the agent did a wrong move, to make sure the opponent cannot make a mvoe
     """
 
-    def __init__(self,env_class, opponent : Agent = None,epsilon : float = 0):
+    def __init__(self,env_class, opponent = None,epsilon : float = 0):
         super(Env, self).__init__()
         self.env = env_class()
         self.opponent = opponent
@@ -22,7 +23,7 @@ class SelfPLayWrapper(Env):
         self.first_reward = None
         self.last_wrong = None
 
-    def set_opponent(self, opponent : Agent):
+    def set_opponent(self, opponent ):
         self.opponent = opponent
         
     def set_epsilon(self, epsilon : float):

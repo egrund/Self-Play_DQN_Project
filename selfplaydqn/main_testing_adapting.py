@@ -1,20 +1,20 @@
-from keras_gym_env import ConnectFourEnv
+from envs.keras_gym_env import ConnectFourEnv
 import numpy as np
-import datetime
+import datetime        
 import tensorflow as tf
 import random as rnd
 
-from env_wrapper2 import SelfPLayWrapper
-from tiktaktoe_env import TikTakToeEnv 
+from envs.env_wrapper2 import SelfPLayWrapper
+from envs.tiktaktoe_env import TikTakToeEnv 
 
-from agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent, AdaptingAgent3, AdaptingAgent4
-from buffer import Buffer
-from training import train_self_play_best
-from testing import testing_adapting_dif_epsilon_opponents
+from agentmodule.agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
+from agentmodule.buffer import Buffer
+from agentmodule.training import train_self_play_best
+from agentmodule.testing import testing_adapting_dif_epsilon_opponents
 
 ### from env_wrapper import ConnectFourSelfPLay
 # seeds
-seed = 42
+seed = 50
 np.random.seed(seed)
 rnd.seed(seed)
 tf.random.set_seed(seed)
@@ -49,7 +49,7 @@ FILTERS = 128
 HIDDEN_UNITS = [64,]
 loss = tf.keras.losses.MeanSquaredError()
 output_activation = None
-BEST_INDEX = 3400
+BEST_INDEX = 5800
 
 # adapting Model architecture
 HIDDEN_UNITS = [64]
@@ -63,7 +63,7 @@ config_name = "adapting_test_new"
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""
 
-best_model_path = f"model/best_agent_tiktaktoe_0998/20230327-191103/best1"
+best_model_path = f"model/agent_linear_decay099/20230327-185908/best1"
 model_path = f"model/{config_name}/{time_string}/adapting"
 
 # create agent
@@ -85,8 +85,8 @@ best_agent = DQNAgent(env,
         output_activation=output_activation)
 best_agent.load_models(BEST_INDEX)
 
-adapting_agent = AdaptingAgent4(best_agent=best_agent,
-                            calculation_value = tf.constant(0.), # has to be a float
+adapting_agent = AdaptingAgent5(best_agent=best_agent,
+                            calculation_value = tf.constant(5.), # has to be a float
                             #env = env, 
                             #buffer = None,
                             #batch = BATCH_SIZE,
@@ -111,7 +111,7 @@ rewards = testing_adapting_dif_epsilon_opponents(adapting_agent,
                                                  opponent_size = OPPONENT_SIZE, 
                                                  batch_size=TESTING_SIZE, 
                                                  sampling = TESTING_SAMPLING, 
-                                                 printing = True,
+                                                 printing = False,
                                                  plot=True,
                                                  adapting = True)
 

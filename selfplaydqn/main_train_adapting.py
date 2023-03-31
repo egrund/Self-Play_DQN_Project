@@ -1,21 +1,21 @@
-from env_wrapper2 import SelfPLayWrapper
+from envs.env_wrapper2 import SelfPLayWrapper
 
 # Choose the env at the top
 #**************************
 
-# from keras_gym_env import ConnectFourEnv as GameEnv
-# from keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
-# from keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
-from tiktaktoe_env import TikTakToeEnv as GameEnv
+# from envs.keras_gym_env import ConnectFourEnv as GameEnv
+# from envs.keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
+# from envs.keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
+from envs.tiktaktoe_env import TikTakToeEnv as GameEnv
 
 import numpy as np
 import datetime
 import tensorflow as tf
 import random as rnd
 
-from agent import DQNAgent, AdaptingDQNAgent
-from buffer import Buffer
-from training import train_self_play_best, train_adapting
+from agentmodule.agent import DQNAgent, AdaptingDQNAgent
+from agentmodule.buffer import Buffer
+from agentmodule.training import train_self_play_best, train_adapting
 
 # seeds
 seed = 42
@@ -68,7 +68,7 @@ output_activation = None
 GAME_BALANCE_MAX = 25
 
 #Subfolder for Logs
-config_name = "adapting_test"
+config_name = "adapting_test_new"
 #createsummary writer for vusalization in tensorboard    
 time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # time_string = ""

@@ -1,21 +1,21 @@
-from env_wrapper2 import SelfPLayWrapper
+from envs.env_wrapper2 import SelfPLayWrapper
 
 # Choose the env at the top
 #**************************
 
-# from keras_gym_env import ConnectFourEnv as GameEnv
-# from keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
-# from keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
-from tiktaktoe_env import TikTakToeEnv as GameEnv
+# from envs.keras_gym_env import ConnectFourEnv as GameEnv
+# from envs.keras_gym_env_2wins import ConnectFourEnv2Wins as GameEnv
+# from envs.keras_gym_env_novertical import ConnectFourEnvNoVertical as GameEnv
+from envs.tiktaktoe_env import TikTakToeEnv as GameEnv
 
 import numpy as np
 import datetime
 import tensorflow as tf
 import random as rnd
 
-from agent import DQNAgent
-from buffer import Buffer
-from training import train_self_play_best
+from agentmodule.agent import DQNAgent
+from agentmodule.buffer import Buffer
+from agentmodule.training import train_self_play_best
 
 # seeds
 seed = 42

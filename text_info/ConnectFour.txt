@@ -2,7 +2,8 @@
 agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
 
 best rewards at iteration: 
-400, 550, 900
+400
+550, 900
 
 ++++++++++++++++++++++
 
@@ -46,7 +47,8 @@ unavailable_action_reward = False
 ConnectFour_linear/20230330-174353 (Fabian Notebook)
 
 best rewards at iteration: 
-560, 720, 860
+860
+560, 720 
 
 ++++++++++++++++++++++
 

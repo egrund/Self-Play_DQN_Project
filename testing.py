@@ -122,8 +122,7 @@ def testing_dif_agents(agent, env_class, size = 100, load = None, printing = Tru
         axes = sns.barplot(rewards_df, linewidth=2, palette= "tab10",y="config_index", x="Percentage", hue="Reward", orient="h")
         axes.set_xlabel("Percentage",size="xx-large")
         #axes.set_ylabel("config_index",size="xx-large")
-        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large")
-        axes.set_yticks(range(0,101,10))
+        axes.legend(prop={'size':15}, title = "Reward", title_fontsize = "xx-large", loc="center")
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 

@@ -69,9 +69,10 @@ def testing(agent, env_class, size = 100, printing = True, load = None, plot = F
                 print(f" reward {value}: {counts[j]} percent")
 
     if plot:
-        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
+        rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="index", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Index", y="Percentage", hue="Reward")
+        axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -113,9 +114,10 @@ def testing_dif_agents(agent, env_class, size = 100, load = None, printing = Tru
                     print(f" reward {value}: {counts[j]} percent")
 
     if plot:
-        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "config_index": r[2] + str(r[3])} for j in range(3)] for r in rewards]
+        rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "config_index": r[2] + str(r[3])} for j in range(3)] for r in rewards]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axes = sns.barplot(rewards_df, linewidth=2, palette= "tab10",y="config_index", x="percentage", hue="reward", orient="h")
+        axes = sns.barplot(rewards_df, linewidth=2, palette= "tab10",y="config_index", x="Percentage", hue="Reward", orient="h")
+        axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -174,9 +176,10 @@ def testing_adapting(agent, env_class, batch_size = 100, sampling = 10, printing
         rewards.append((unique,counts))
 
     if plot:
-        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
+        rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Index":idx} for j in range(3)] for idx,r in zip(range(start,stop,step),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="index", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Index", y="Percentage", hue="Reward")
+        axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 
@@ -228,9 +231,10 @@ def testing_adapting_dif_epsilon_opponents(agent, env_class, opponent : Agent, o
         rewards.append((unique,counts))
 
     if plot:
-        rewards_dict = [[{"reward":r[0][j], "percentage":r[1][j], "epsilon":idx} for j in range(3)] for idx,r in zip(np.linspace(1,0,opponent_size),rewards)]
+        rewards_dict = [[{"Reward":r[0][j], "Percentage":r[1][j], "Epsilon":idx} for j in range(3)] for idx,r in zip(np.linspace(1,0,opponent_size),rewards)]
         rewards_df = pd.DataFrame([rd for subrd in rewards_dict for rd in subrd])
-        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="epsilon", y="percentage", hue="reward")
+        axes = sns.lineplot(rewards_df, linewidth=2, palette= "tab10",x="Epsilon", y="Percentage", hue="Reward")
+        axes.set_yticks(range(0,101,10))
         axes.grid(True,color = 'black', linestyle="--",linewidth=0.5)
         plt.show()
 

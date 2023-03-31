@@ -1,4 +1,4 @@
-from model import MyCNN_RL, MyMLP_RL
+from agentmodule.model import MyCNN_RL, MyMLP_RL
 import tensorflow as tf
 import numpy as np
 import random as rnd
@@ -110,7 +110,7 @@ class DQNAgent(Agent):
         """
 
     def __init__(self, env, buffer, batch : int, model_path, polyak_update = 0.9, inner_iterations = 10, reward_function = lambda d,r: r, 
-                 conv_kernel = [3], filters = 128, hidden_units = [64], dropout_rate = 0.5, normalisation : bool = True,prioritized_experience_replay : bool = True, 
+                 conv_kernel = [3], filters = 128, hidden_units = [64], dropout_rate = 0.5, normalisation : bool = True, prioritized_experience_replay : bool = True, 
                  gamma : tf.constant = tf.constant(0.99),loss_function = tf.keras.losses.MeanSquaredError(), output_activation = None):
         
         super().__init__()
@@ -278,8 +278,12 @@ class DQNAgent(Agent):
 
     def load_models(self, i):
         """ loads models using model_path on index i"""
-        self.model.load_weights(f"{self.model_path}/model/{i}")
-        self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
+        try:
+            self.model.load_weights(f"{self.model_path}/model/{i}")
+            self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
+        except:
+            self.model.load_weights(f"../{self.model_path}/model/{i}")
+            self.target_model.load_weights(f"../{self.model_path}/target_model/{i}")
 
     def copyAgent(self,env):
         """ 
@@ -607,8 +611,13 @@ class AdaptingDQNAgent(AdaptingAgent):
 
     def load_models(self, i):
         """ loads models using model_path on index i"""
-        self.model.load_weights(f"{self.model_path}/model/{i}")
-        self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
+
+        try:
+            self.model.load_weights(f"{self.model_path}/model/{i}")
+            self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
+        except: # seems you are not in the right folder when executing
+            self.model.load_weights(f"../{self.model_path}/model/{i}")
+            self.target_model.load_weights(f"../{self.model_path}/target_model/{i}")
 
     def copyAgent(self,env):
         """ 

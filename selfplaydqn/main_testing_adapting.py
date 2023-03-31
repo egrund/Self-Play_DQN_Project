@@ -8,13 +8,11 @@ from envs.env_wrapper2 import SelfPLayWrapper
 from envs.tiktaktoe_env import TikTakToeEnv 
 
 from agentmodule.agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
-from agentmodule.buffer import Buffer
-from agentmodule.training import train_self_play_best
 from agentmodule.testing import testing_adapting_dif_epsilon_opponents
 
 ### from env_wrapper import ConnectFourSelfPLay
 # seeds
-seed = 50
+seed = 42
 np.random.seed(seed)
 rnd.seed(seed)
 tf.random.set_seed(seed)

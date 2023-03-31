@@ -1,29 +1,30 @@
+"""
+This file was created to make plots from csv files exported from tensoboard. The possible values are loss, or if importing 3 files rewards.
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Change hyperparameters
 #*************************
-path = "model/agent_linear_decay099/20230327-185908/tensorboard_data/"
-game  = "TikTakToe"
+path = "model/agent_ConnectFour_tanh/20230328-094318/tensorboard_data/"
+game  = "ConnectFour"
+which = "reward"
 
-# for creating a loss plot
-#"""
-files = ["loss"]
-plot_title = "Loss " + game
-y_value = "Loss"
-hue_value = None
-point = None
-#"""
+if which == "loss":
+    files = ["loss"]
+    plot_title = "Loss " + game
+    y_value = "Loss"
+    hue_value = None
+    point = None
 
-# for creating a reward plot
-"""
-files = ["reward1", "reward0", "reward-1"]
-plot_title = "Rewards " + game
-y_value = "Percentage"
-hue_value = "Reward"
-point =  5300 # The agent you chose to be shown in the plot
-"""
+if which == "reward":
+    files = ["reward1", "reward0", "reward-1"]
+    plot_title = "Rewards " + game
+    y_value = "Percentage"
+    hue_value = "Reward"
+    point =  400 # The agent you chose to be shown in the plot
 
 # Code
 #*****

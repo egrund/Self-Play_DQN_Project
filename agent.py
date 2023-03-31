@@ -727,3 +727,29 @@ class AdaptingAgent4(AdaptingAgent3):
         adapting_action =  tf.argmin(tf.math.abs(scaled_around_value),axis=-1)
 
         return adapting_action
+    
+class AdaptingAgent5(AdaptingAgent3):
+    """ normalizes the expected future reward and then chooses the value closest to - game_balance instead of just 0 """
+
+    def __init__(self, best_agent : DQNAgent, calculation_value : tf.constant = tf.constant(0.3), game_balance_max : int = 500):
+        super().__init__(best_agent,tf.constant(0.3), game_balance_max)
+        self.calculation_value = calculation_value
+
+    #@tf.function(reduce_retracing=True)
+    def action_choice(self, probs, available_actions_bool = None):
+        """ 
+        returns best action, in this case, that makes the future reward closed to minus the game balance, but scales the values around -1 and 1 first
+        this function removes available actions if they are given. 
+        
+        Parameters: 
+            probs (tf.Tensor): (batch, model output size) the model output to choose an action from
+            available_actions_bool (tf.Tensor): a mask showing which actions are available
+        """
+
+        scaled_around_value = tf.subtract(tf.divide(probs,tf.reduce_max(tf.math.abs(probs))), -self.get_game_balance(tensor=True) * self.calculation_value)
+
+        if available_actions_bool != None:
+            scaled_around_value = tf.where(available_actions_bool, scaled_around_value, tf.constant(10.))
+        adapting_action =  tf.argmin(tf.math.abs(scaled_around_value),axis=-1)
+
+        return adapting_action

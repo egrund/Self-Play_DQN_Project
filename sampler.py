@@ -11,10 +11,16 @@ class Sampler:
     Attributes: 
         envs (list): List of all the environments to sample from
         batch (int): how many environments to sample from at the same time
-        agents (list): list of two agents to use for the sampling procedure
+        agent (Agent): the agent to sample for
+        opponent (Agent) or list of Agents: The opponent to use or use several
+        single_opponent (bool): whether opponent is a single agent or a list
+        opponent_epsilon (float): the epsilon value to use for the epsilon greedy policy of the opponent(s)
+        unavailable_in (bool): if True, the sampling agent can decide for unavailable actions and gets a penalty as reward back and the env state does not change
+        adapting_agent (bool): whether the sampling agent is an adapting agents that wants information about the rewards other than putting it in the buffer. 
+            Also there is information about the average rewards of the past and the opponents level (decided by the agent) added to the buffer. 
     """
 
-    def __init__(self,batch,agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False, adapting_agent : bool = False):
+    def __init__(self,batch,agent : Agent, env_class, opponent : Agent ,opponent_epsilon : float = 0, unavailable_in : bool = False, adapting_agent : bool = False):
 
         self.envs = [SelfPLayWrapper(env_class, opponent,opponent_epsilon) for _ in range(batch)]
         self.batch = batch
@@ -26,10 +32,13 @@ class Sampler:
         self.adapting_agent = adapting_agent
 
     def set_opponent(self, opponent : Agent):
+        """ sets a new single opponent """
         [env.set_opponent(opponent) for env in self.envs]
         self.opponent = opponent 
 
     def set_multiple_opponents(self, opponents : list):
+        """ sets multiple opponents for sampling. 
+        Opponents has to be broadcastable to self.envs which are batch much."""
         if self.batch % len(opponents) != 0:
             raise ValueError("Opponents has to be broadcastable to self.envs which are batch much")
         # broadcast shapes together
@@ -40,14 +49,18 @@ class Sampler:
         self.single_opponent = False
 
     def set_opponent_epsilon(self,epsilon):
+        """ sets a new opponent epsilon """
         [env.set_epsilon(epsilon) for env in self.envs]
         self.opponent_epsilon = epsilon
 
-    def sample_from_game_wrapper(self,epsilon, save = True):
-        """ samples from env wrappers"""
-
-        #steps_list = 0
-        #tidy_list = 0
+    def sample_from_game_wrapper(self,epsilon : float, save = True):
+        """ 
+        samples from env wrappers 
+        
+        Parameters:
+            epsilon (float): the epsilon to use for the epsilon greedy policy of the sampling agent
+            save (bool): whether the created samples should be saved in the sampling agents buffer
+        """
         
         sarsd = []
         current_envs = self.envs
@@ -61,7 +74,6 @@ class Sampler:
             available_actions_bool = [env.available_actions_mask for env in current_envs]
             actions = self.agent.select_action_epsilon_greedy(epsilon, observations,available_actions, available_actions_bool, unavailable = self.unavailable_in)
 
-            #sa = time.time()
             if self.single_opponent:
                 o_0 = np.array([env.step_player(actions[i],self.unavailable_in) for i,env in enumerate(current_envs)]) # only state for opponent imput
 
@@ -78,13 +90,10 @@ class Sampler:
             if self.adapting_agent:
                 self.agent.add_game_balance_information([results[i][1] for i in range(len(current_envs)) if results[i][2]])
 
-            # get next actions, as we also save that in the buffer
+            # get next available actions, as we also save that in the buffer
             available_actions_bool = [env.available_actions_mask for env in current_envs]
 
-            #so = time.time()
-            #steps_list += so-sa
             # bring everything in the right order
-            #sa = time.time()
             if not self.adapting_agent:
                 # state, action, reward, new state, done, next_available_actions_bool
                 results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i]] for i in range(len(current_envs))]
@@ -92,18 +101,14 @@ class Sampler:
                 # state, action, reward, new state, done, next_available_actions_bool, game_balance, opponent_level
                 results = [[observations[i],actions[i],results[i][1],results[i][0],results[i][2], available_actions_bool[i],self.agent.get_game_balance(), self.agent.opponent_level] for i in range(len(current_envs))] 
 
-            #so = time.time()
-            #tidy_list+= so-sa
-
             sarsd.extend(results)
             
+            # remove envs and last observations of envs that are done
             observations = np.array([results[i][3] for i in range(len(current_envs)) if not results[i][4]])
             current_envs = np.array([current_envs[i] for i in range(len(current_envs)) if not results[i][4]])
 
             # check if all envs are done
             if observations.shape == (0,):
-                #print("Average step time: ", steps_list/(e+1))
-                #print("Average time change oder: ", tidy_list/(e+1))
                 break
 
             # remind the agent whether his last action was an unavailable action (otherwise we would get a lot of the same samples out of it)
@@ -114,22 +119,16 @@ class Sampler:
 
         # save data in buffer
         if save:
-            #sa = time.time()
             self.agent.buffer.extend(sarsd)
-            #so = time.time()
-            #print("Saving in buffer time: ", so-sa)
-
-        # render for debugging or playing
-        # [e.render() for e in self.envs]
 
         # return rewards for the agent
         return [sample[2] for sample in sarsd]
     
     def fill_buffer(self,epsilon):
-        """ fills the empty buffer of the agent 
+        """ fills the empty buffer of the agent until its min fill value
         
         Parameters: 
-            epsilon (float): epsilon for the epsilon greedy policy of the agent
+            epsilon (float): epsilon for the epsilon greedy policy of the sampling agent
         """
 
         while(self.agent.buffer.current_size < self.agent.buffer.min_size):

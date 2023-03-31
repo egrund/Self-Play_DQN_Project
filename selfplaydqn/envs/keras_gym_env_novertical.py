@@ -1,4 +1,6 @@
 # File Source: https://keras-gym.readthedocs.io/en/stable/_modules/keras_gym/envs/self_play.html#ConnectFourEnv
+# adapted
+# This env lets you win, when you have four, but only horizontally or diagonally not vertically
 
 from gym import Env
 from gym.spaces import Discrete, MultiDiscrete

@@ -9,6 +9,7 @@ import random as rnd
 # **************************
 from agentmodule.agent import AdaptingAgent, AdaptingAgent2, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
 AdaptingAgentToUse = AdaptingAgent
+# is c, or B or cp depending on which agent
 calculation_value = tf.constant(0.) # has to be a float
 
 # Choose which env to use

@@ -1,3 +1,5 @@
+""" This file trains an adapting DQN agent by letting it play against pretrained normal DQN agents. """
+
 from envs.envwrapper2 import SelfPLayWrapper
 from agentmodule.agent import DQNAgent, AdaptingDQNAgent
 from agentmodule.buffer import Buffer
@@ -58,7 +60,7 @@ FILTERS = 128
 HIDDEN_UNITS_BEST = [64]
 loss_best = tf.keras.losses.MeanSquaredError()
 output_activation_best = None
-BEST_INDEX = 3400
+BEST_INDEX = 5400
 best_model_path = f"model/agent_linear_decay099/20230327-185908/best1"
 
 # adapting Model architecture

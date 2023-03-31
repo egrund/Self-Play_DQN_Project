@@ -1,3 +1,5 @@
+""" This file trains a (or several) normal DQN agent(s) using self-play."""
+
 from envs.envwrapper2 import SelfPLayWrapper
 from agentmodule.agent import DQNAgent
 from agentmodule.buffer import Buffer

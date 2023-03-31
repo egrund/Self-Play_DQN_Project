@@ -1,65 +1,64 @@
-from envs.keras_gym_env import ConnectFourEnv
+""" This file test an agent against an opponent with different epsilon values for its policy. """
 import numpy as np
 import datetime        
 import tensorflow as tf
 import random as rnd
-
-from envs.env_wrapper2 import SelfPLayWrapper
-from envs.tiktaktoe_env import TikTakToeEnv 
-
-from agentmodule.agent import DQNAgent, AdaptingDQNAgent, AdaptingAgent2, AdaptingAgent, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
 from agentmodule.testing import testing_adapting_dif_epsilon_opponents
+from envs.envwrapper2 import SelfPLayWrapper
+from agentmodule.agent import DQNAgent
+
+# Choose which Agent to use from the following: all are possible
+# **************************
+from agentmodule.agent import DQNAgent, AdaptingAgent, AdaptingAgent2, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5, AdaptingDQNAgent
+AdaptingAgentToUse = AdaptingAgent
+# is c, or B or cp depending on which agent
+calculation_value = tf.constant(0.) # has to be a float
+
+# Choose which env to use
+# *************************
+from envs.tiktaktoe_env import TikTakToeEnv 
+from envs.keras_gym_env import ConnectFourEnv
+GameEnv = TikTakToeEnv 
 
 ### from env_wrapper import ConnectFourSelfPLay
 # seeds
-seed = 42
-np.random.seed(seed)
-rnd.seed(seed)
-tf.random.set_seed(seed)
+if True:
+    seed = 42
+    np.random.seed(seed)
+    rnd.seed(seed)
+    tf.random.set_seed(seed)
 
-# Hyperparameter
-#*****************
-iterations = 10001
-INNER_ITS = 50 *2
-BATCH_SIZE = 256 #512
-#reward_function_adapting_agent = lambda d,r: tf.where(r==-0.1, tf.constant(0.1), tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(-1.0), r)))
+if GameEnv == TikTakToeEnv:
+    config_name = "agent_linear_decay099"
+    time_string = "20230327-185908"
+    agent = 1
+    # playing hyperparameter
+    best_index = 5300
+    # Model architecture
+    CONV_KERNEL = [3]
+    FILTERS = 128
+    HIDDEN_UNITS = [64,]
+    output_activation = None
 
-epsilon = 1
-EPSILON_MIN = 0.01
-EPSILON_DECAY = 0.99
-opponent_epsilon_function = lambda x: np.random.uniform((x/2 if x > 0.01 else 0), 1)
-
-POLYAK = 0.9
-dropout_rate = 0
-normalisation = True
-
-BATCH_SIZE_SAMPLING = 512
-SAMPLING = 2
-AGENT_NUMBER = 1 # how many agents will play against each other while training
-discount_factor_gamma = tf.constant(0.3)
-unavailable_action_reward = False
-D = 20 # how often to save and test the agent
-
-# Model architecture
-#********************
-CONV_KERNEL = [3]
-FILTERS = 128
-HIDDEN_UNITS = [64,]
-loss = tf.keras.losses.MeanSquaredError()
-output_activation = None
-BEST_INDEX = 5800
+if GameEnv == ConnectFourEnv:
+    config_name = "agent_ConnectFour_tanh"
+    time_string = "20230328-094318"
+    agent = 1
+    # playing hyperparameter
+    best_index = 400
+    # Model architecture
+    CONV_KERNEL = [4,4]
+    FILTERS = 128
+    HIDDEN_UNITS = [64,64]
+    output_activation = tf.nn.tanh
 
 # adapting Model architecture
-HIDDEN_UNITS = [64]
-loss = tf.keras.losses.MeanSquaredError()
-output_activation = None
-GAME_BALANCE_MAX = 100
+HIDDEN_UNITS_ADAPTING = [64]
+output_activation_adapting = None
+GAME_BALANCE_MAX = 25
 
 #Subfolder for Logs
 config_name = "adapting_test_new"
-#createsummary writer for vusalization in tensorboard    
-time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# time_string = ""
 
 best_model_path = f"model/agent_linear_decay099/20230327-185908/best1"
 model_path = f"model/{config_name}/{time_string}/adapting"
@@ -69,33 +68,32 @@ model_path = f"model/{config_name}/{time_string}/adapting"
 env = SelfPLayWrapper(TikTakToeEnv)
 best_agent = DQNAgent(env,
         None, 
-        batch = BATCH_SIZE, 
+        batch = 1, 
         model_path = best_model_path, 
-        polyak_update = POLYAK, 
-        inner_iterations = INNER_ITS, 
         conv_kernel = CONV_KERNEL,
         filters = FILTERS,
         hidden_units = HIDDEN_UNITS,
-        dropout_rate = dropout_rate, 
-        normalisation = normalisation, 
-        gamma = discount_factor_gamma,
-        loss_function=loss,
         output_activation=output_activation)
-best_agent.load_models(BEST_INDEX)
+best_agent.load_models(best_index)
 
-adapting_agent = AdaptingAgent5(best_agent=best_agent,
-                            calculation_value = tf.constant(5.), # has to be a float
-                            #env = env, 
-                            #buffer = None,
-                            #batch = BATCH_SIZE,
-                            #model_path=model_path,
-                            #polyak_update=POLYAK,
-                            #inner_iterations=INNER_ITS,
-                            #hidden_units=HIDDEN_UNITS,
-                            #gamma = discount_factor_gamma,
-                            #loss_function=loss,
-                            #output_activation=output_activation,
+adapting = True
+if AdaptingAgentToUse == DQNAgent:
+    adapting_agent = best_agent
+    adapting = False
+elif AdaptingAgentToUse == AdaptingAgent:
+    adapting_agent = AdaptingAgent(best_agent=best_agent, game_balance_max=GAME_BALANCE_MAX)
+elif AdaptingAgentToUse == AdaptingDQNAgent:
+    adapting_agent = AdaptingDQNAgent(best_agent=best_agent,
+                            env = env, 
+                            buffer = None,
+                            model_path=model_path,
+                            hidden_units=HIDDEN_UNITS_ADAPTING,
+                            output_activation=output_activation_adapting,
                             game_balance_max=GAME_BALANCE_MAX)
+else:
+    adapting_agent = AdaptingDQNAgent(best_agent=best_agent,
+                                calculation_value = calculation_value,
+                                game_balance_max=GAME_BALANCE_MAX)
 
 # Testing Hyperparameter
 #**************************
@@ -109,10 +107,8 @@ rewards = testing_adapting_dif_epsilon_opponents(adapting_agent,
                                                  opponent_size = OPPONENT_SIZE, 
                                                  batch_size=TESTING_SIZE, 
                                                  sampling = TESTING_SAMPLING, 
-                                                 printing = False,
+                                                 printing = True,
                                                  plot=True,
-                                                 adapting = True)
-
-
+                                                 adapting = adapting) # False when we use a DQNAgent
 
 print("done")

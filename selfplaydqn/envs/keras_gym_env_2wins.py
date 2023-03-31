@@ -1,5 +1,6 @@
 # File Source: https://keras-gym.readthedocs.io/en/stable/_modules/keras_gym/envs/self_play.html#ConnectFourEnv
 # just adapted a little bit
+# This env lets you only win when you have two horizontal next to each other
 
 from gym import Env
 from gym.spaces import Discrete, MultiDiscrete

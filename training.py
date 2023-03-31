@@ -7,17 +7,35 @@ import numpy as np
 import time
 import tqdm
   
-def train_self_play_best(agents : list, env_class, batch_size_sampling, iterations : int, writers : list, epsilon = 1, 
-                         epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20, 
-                         testing_size : int = 100):
-    """ """
+def train_self_play_best(agents : list, env_class, batch_size_sampling : int, iterations : int, writers : list, epsilon = 1, 
+                         epsilon_decay : float = 0.9, epsilon_min : float = 0.01, sampling : int = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), 
+                         d : int = 20, testing_size : int = 100):
+    """ 
+    A training algorithm to train a DQN agent 
+    
+    Parameters:
+        agents (list): a list of agents to train (can be just one element inside)
+        env_class (class): The class name of the environment to use
+        batch_size_sampling (int): the batch size which determines how many games to play at the same time during each training iteration
+        iterations (int): how many iterations to train for
+        writers (list): a summary writer for each agent
+        epsilon (float/int): The epsilon value to begin with
+        epsilon_decay (float): how much to keep from epsilon each iteration
+        epsilon_min (float): at which point not to decrease epsilon anymore
+        sampling (int): how often to sample batch_size_sampling many games
+        unavailable_in (bool): whether the agent(s) should be able to sample unavailable actions
+        opponent_epsilon (func): a function to calculate the opponents epsilon from the agents epsilon
+        d (int): every d iteration the agents models will be saved and tested
+        testing_size (int): how many games to test for
+    """
+
     sampler_time = 0
     inner_time = 0
     outer_time = 0
-    # create Sampler 
+
+    # create Sampler and fill buffer
     old_agents = [agent.copyAgent(SelfPLayWrapper(env_class)) for agent in agents]
     dist_opponent = 0
-
 
     with tf.device("/CPU:0"):
         sampler = [Sampler(batch_size_sampling,
@@ -39,8 +57,7 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
         losses = [agent.train_inner_iteration(writers[j],i,unavailable_in) for j,agent in enumerate(agents)]
         inner_time += time.time() - start
         
-        # save model
-        # d = 50
+        # save and test model
         if i % d == 0:
             [agent.save_models(i) for agent in agents]
 
@@ -66,38 +83,50 @@ def train_self_play_best(agents : list, env_class, batch_size_sampling, iteratio
 
         # new sampling + add to buffer
         with tf.device("/CPU:0"):
-            #sampler_time = time.time()
+
             [sampler[j].set_opponent(old_agents[int((j+dist_opponent)%len(agents))]) for j in range(len(agents))]
             dist_opponent = dist_opponent + 1 if dist_opponent < len(agents) -1 else 0
-            [s.set_opponent_epsilon( opponent_epsilon(epsilon) ) for s in sampler]
-            #print("set_opponents",time.time() - sampler_time)
+
             sampler_start = time.time()
+            # this automatically saves to the buffer of the agent
             _ = [[s.sample_from_game_wrapper(epsilon) for _ in range(sampling)] for s in sampler]
-            #print("sampler_time",time.time() - sampler_time)
             sampler_time += time.time() - sampler_start
-        #print("h")
+
+        # save agents weights as opponents of the next iteration
         old_agents = [agent.copyAgent(SelfPLayWrapper(env_class)) for agent in agents]
 
-        end = time.time()
-
-        # write summary
-            
-        # logging the metrics to the log file which is used by tensorboard
-        #with train_writer[0].as_default():
-            #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
-            #tf.summary.scalar(f"time per iteration", end-start, step=i)
         outer_time += time.time()-start
 
 def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampling, iterations : int, writer_train, writer_test, epsilon = 1, 
                          epsilon_decay = 0.9, epsilon_min = 0.01, sampling = 1, unavailable_in : bool = False, opponent_epsilon = lambda x: (x/2), d : int = 20,
                          testing_size : int = 100, testing_sampling : int = 10):
-    """ """
+    """ 
+    A training algorithm to train a DQN agent 
+    
+    Parameters:
+        agents (Agent): the adapting Agent to train
+        opponents (list): a list of Agents to be the opponents
+        env_class (class): The class name of the environment to use
+        batch_size_sampling (int): the batch size which determines how many games to play at the same time during each training iteration
+        iterations (int): how many iterations to train for
+        writers_train (summary writer): a summary writer for the loss and performance during sampling
+        writers_test (summary writer): a summary writer for the performance during testing
+        epsilon (float/int): The epsilon value to begin with
+        epsilon_decay (float): how much to keep from epsilon each iteration
+        epsilon_min (float): at which point not to decrease epsilon anymore
+        sampling (int): how often to sample batch_size_sampling many games
+        unavailable_in (bool): whether the agent(s) should be able to sample unavailable actions
+        opponent_epsilon (func): a function to calculate the opponents epsilon from the agents epsilon
+        d (int): every d iteration the agents models will be saved and tested
+        testing_size (int): how many games to test for at the same time
+        testing_sampling (int): how often to test for testing_size many games (This gives the agent time to learn about the opponent)
+    """
+
     sampler_time = 0
     inner_time = 0
     outer_time = 0
-    # create Sampler 
-    dist_opponent = 0
 
+    # create Sampler and fill buffer
     with tf.device("/CPU:0"):
         sampler = Sampler(batch_size_sampling,
                            agent = agent, 
@@ -120,7 +149,6 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
         inner_time += time.time() - start
         
         # save model
-        # d = 50
         if i % d == 0:
             agent.save_models(i)
 
@@ -148,27 +176,18 @@ def train_adapting(agent : Agent, opponents : list, env_class, batch_size_sampli
 
         # new sampling + add to buffer
         with tf.device("/CPU:0"):
-            #sampler_time = time.time()
+            # set to next opponent, also reset the values of the agents that adapt to the opponent
             sampler.set_opponent(opponents[int(i%len(opponents))])
             agent.reset_game_balance()
             agent.reset_opponent_level()
+
             sampler.set_opponent_epsilon( opponent_epsilon(epsilon) )
-            #print("set_opponents",time.time() - sampler_time)
             sampler_start = time.time()
             _ = [sampler.sample_from_game_wrapper(epsilon) for _ in range(sampling)]
-            #print("sampler_time",time.time() - sampler_time)
             sampler_time += time.time() - sampler_start
-        #print("h")
+
         with writer_train.as_default():
             tf.summary.scalar(f"game_balance",agent.get_game_balance(), step=i)
             tf.summary.scalar(f"opponent_level", agent.opponent_level, step=i)
 
-        end = time.time()
-
-        # write summary
-            
-        # logging the metrics to the log file which is used by tensorboard
-        #with train_writer[0].as_default():
-            #tf.summary.scalar(f"average_reward", average_reward , step=i) # does not help in self-play
-            #tf.summary.scalar(f"time per iteration", end-start, step=i)
         outer_time += time.time()-start

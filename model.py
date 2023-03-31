@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class MyCNNNormalizationLayer(tf.keras.layers.Layer):
-    """ a layer for a CNN with kernel size 3 and ReLu as the activation function """
+    """ a layer for a CNN and ReLu as the activation function """
 
     def __init__(self,filters,normalization=False, reg = None, kernel_size = 3):
         """ Constructor

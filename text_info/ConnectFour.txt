@@ -1,0 +1,85 @@
+++++++++++++++++++++++
+agent_ConnectFour_tanh/20230328-094318 (Fabian Notebook)
+
+best rewards at iteration: 
+400, 550, 900
+
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = 0
+
+model architecture: 1 agent
+******************
+CONV_KERNEL = [4,4]
+FILTERS = 128
+HIDDEN_UNITS = [64,64]
+loss = tf.keras.losses.MeanSquaredError()
+output_activation = tf.nn.tanh
+
+
+# Hyperparameter
+#*****************
+iterations = 10001 # only did 900
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
+
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.995
+opponent_epsilon_function = lambda x: (x/2)
+
+POLYAK = 0.9
+dropout_rate = 0
+normalisation = True
+
+BATCH_SIZE_SAMPLING = 512
+SAMPLING = 2
+AGENT_NUMBER = 1 # how many agents will play against each other while training
+discount_factor_gamma = tf.constant(0.3)
+unavailable_action_reward = False
+
+
+
+++++++++++++++++++++++
+ConnectFour_linear/20230330-174353 (Fabian Notebook)
+
+best rewards at iteration: 
+560, 720, 860
+
+++++++++++++++++++++++
+
+env: 
+***
+TikTakToeEnv, move_reward = 0
+
+model architecture: 1 agent
+******************
+CONV_KERNEL = [4,4]
+FILTERS = 128
+HIDDEN_UNITS = [64,64]
+loss = tf.keras.losses.MeanSquaredError()
+output_activation = None
+
+
+# Hyperparameter
+#*****************
+iterations = 2501 # only did 1000
+INNER_ITS = 50 *2
+BATCH_SIZE = 256 #512
+
+epsilon = 1
+EPSILON_MIN = 0.01
+EPSILON_DECAY = 0.995
+opponent_epsilon_function = lambda x: (x/2)
+
+POLYAK = 0.9
+dropout_rate = 0
+normalisation = True
+
+BATCH_SIZE_SAMPLING = 512
+SAMPLING = 1
+AGENT_NUMBER = 1 # how many agents will play against each other while training
+discount_factor_gamma = tf.constant(0.3)
+unavailable_action_reward = False

@@ -60,7 +60,7 @@ Best Agent AgentTanH/20230327-192241/best1;1150testing:
 Best Agent AgentTanH/20230327-192241/best1;1300testing:
  reward -1.0: 0.38999999999999996 percent
  reward 0.0: 9.73 percent
- reward 1.0: 89.88000000000001 percent
+reward 1.0: 89.88000000000001 percent
 Best Agent best_agent_tiktaktoe_0998/20230327-191103/best1;3300testing:
  reward -1.0: 0.33 percent
  reward 0.0: 7.920000000000001 percent

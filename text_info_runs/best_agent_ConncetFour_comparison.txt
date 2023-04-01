@@ -1,3 +1,6 @@
+Comparison of ConnectFour agents: 
+*******************************
+
 Best Agent ConnectFour_linear/20230330-174353/best1/;560testing:
  reward -1.0: 6.21 percent
  reward 0.0: 0.06 percent

@@ -68,6 +68,7 @@ class ConnectFourEnvNoVertical(Env):
     win_reward = 1.0
     loss_reward = -win_reward
     draw_reward = 0.0
+    move_reward = 0.
     wrong_move_reward = -0.5
     action_space = Discrete(num_cols)
     observation_space = MultiDiscrete(
@@ -189,7 +190,7 @@ class ConnectFourEnvNoVertical(Env):
 
         # run logic
         self.done, reward = self._done_reward(a)
-        return self.state, reward, self.done#, {'state_id': self.state_id}
+        return (self.state, reward, self.done, False) if return_wrong else (self.state, reward, self.done)
 
 
     def render(self, *args, **kwargs):
@@ -310,11 +311,11 @@ class ConnectFourEnvNoVertical(Env):
             for j0 in range(4):
                 j1 = j0 + 4
                 if np.any(np.tensordot(self.filters, s[i0:i1, j0:j1]) == 4):
-                    return True, 1.0
+                    return True, self.win_reward
 
         # check for a draw
         if len(self.available_actions) == 0:
-            return True, 0.0
+            return True, self.draw_reward
 
         # this is what's returned throughout the episode
-        return False, 0.0
+        return False, self.move_reward

@@ -210,7 +210,7 @@ class ConnectFourEnv(Env):
 
         # run logic
         self.done, reward = self._done_reward(a)
-        return self.state, reward, self.done#, {'state_id': self.state_id}
+        return (self.state, reward, self.done, False) if return_wrong else (self.state, reward, self.done)
 
 
     def render(self, *args, **kwargs):

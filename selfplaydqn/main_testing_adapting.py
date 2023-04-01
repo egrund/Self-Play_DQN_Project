@@ -11,7 +11,7 @@ from agentmodule.agent import DQNAgent
 from agentmodule.agent import DQNAgent, AdaptingAgent, AdaptingAgent2, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
 AdaptingAgentToUse = AdaptingAgent
 # is c, or B or cp depending on which agent
-calculation_value = tf.constant(4.) # has to be a float
+calculation_value = tf.constant(1.) # has to be a float
 GAME_BALANCE_MAX = 25
 
 # Choose which env to use

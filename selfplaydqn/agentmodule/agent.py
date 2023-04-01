@@ -1,4 +1,4 @@
-from agentmodule.model import MyCNN_RL, MyMLP_RL
+from agentmodule.model import MyCNN_RL
 import tensorflow as tf
 import numpy as np
 
@@ -17,6 +17,7 @@ class Agent:
     def get_do_random(self):
         return self.do_random
 
+    @tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action 
@@ -64,19 +65,18 @@ class Agent:
         # if we also let the random action be unavailable sampling just takes very much longer. 
         random_actions = [np.random.choice(a) for a in available_actions]
 
-        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions = available_actions, available_actions_bool = available_actions_bool, unavailable = unavailable).numpy()
+        best_actions = self.select_action(tf.convert_to_tensor(observations, dtype=tf.float32), available_actions_bool = tf.convert_to_tensor(available_actions_bool), unavailable = tf.convert_to_tensor(unavailable)).numpy()
         return np.where(random_action_where,random_actions,best_actions)
     
-    def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, 
+    def select_action(self, observations,  available_actions_bool = None, unavailable : bool = False, 
                       opponent_level = None, save_opponent_level = True, game_balance = None):
         """ 
         selects the currently best action using the model 
         
         Parameters:
-            observations (array): (batch, 7, 7) using FourConnect (other env possible)
-            available_actions (list): containing all the available actions for each batch observation
-            available_actions_bool (list): containing for every index whether the action with this value is in available actions
-            unavailable (bool): whether the agent is allowed to choose unavailable actions
+            observations (tf.Tensor): (batch, 7, 7) using FourConnect (other env possible)
+            available_actions_bool (tf.Tensor): containing for every index whether the action with this value is in available actions
+            unavailable (tf.Tensor): whether the agent is allowed to choose unavailable actions
             opponent_level (tf.constant) float: the opponent level given by the agent (only used in AdaptingDQNAgent)
             save_opponent_level (bool): whether we want to save the new opponent level in the agent (only used in AdaptingDQNAgent)
             game_balance (tf.constant) float: the average reward of the last several games (only used in Adapting Agent)
@@ -86,7 +86,7 @@ class Agent:
         """
         raise NotImplementedError("select action is not implemented in Agent")
 
-# TODO best agent only other action decision formular
+# TODO best agent only other action decision formula
 class DQNAgent(Agent):
     """ Implements a basic DQN Algorithm 
     
@@ -190,17 +190,18 @@ class DQNAgent(Agent):
         
         return loss_value
 
-    # @tf.function
-    def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False):
+    @tf.function(reduce_retracing=True)
+    def select_action(self, observations, available_actions_bool = None, unavailable : bool = False):
         """ 
         selects the currently best action using the model 
         
         Parameters:
-            epsilon (float):
-            observations (array): (batch, 7, 7) using FourConnect (other env possible)
-            available_actions (list): containing all the available actions for each batch observation
-            available_actions_bool (list): containing for every index whether the action with this value is in available actions
-            unavailable (bool): whether the agent is allowed to choose unavailable actions
+            observations (tf.Tensor): (batch, 7, 7) using FourConnect (other env possible)
+            available_actions_bool (tf.Tensor): containing for every index whether the action with this value is in available actions
+            unavailable (tf.Tensor): whether the agent is allowed to choose unavailable actions
+            opponent_level (tf.constant) float: the opponent level given by the agent (only used in AdaptingDQNAgent)
+            save_opponent_level (bool): whether we want to save the new opponent level in the agent (only used in AdaptingDQNAgent)
+            game_balance (tf.constant) float: the average reward of the last several games (only used in Adapting Agent)
         
         returns: 
             the chosen best action for each batch element (tf.Tensor)
@@ -217,7 +218,7 @@ class DQNAgent(Agent):
         # calculate best action
         return self.action_choice(probs)
     
-    @tf.function # works
+    @tf.function # only when training, so no problem
     def select_best_action_value(self, observations, available_actions_bool, unavailable : bool = False):
         """ 
         selects the best next action Qsa given observations 
@@ -244,7 +245,7 @@ class DQNAgent(Agent):
         # calculate best action
         return tf.gather(probs,self.action_choice(probs),axis=-1)
     
-    @tf.function # works
+    @tf.function # only when training, so no problem
     def calc_td_error(self, state, action, reward, new_state, done, available_action_bool, unavailable_actions_in):
         """ Calculates the TD error for prioritized experience replay 
         
@@ -260,7 +261,7 @@ class DQNAgent(Agent):
 
         old_Q = tf.gather(self.model(state,training=False),tf.cast(action,dtype=tf.int32),batch_dims=1)
 
-        new_action = self.select_action(new_state, None, available_action_bool, unavailable = unavailable_actions_in)
+        new_action = self.select_action(new_state, available_action_bool, unavailable = unavailable_actions_in)
         new_Q = tf.gather(self.target_model(state,training = False), new_action, batch_dims = 1)
 
         # if the game is done, we cannot do another move
@@ -377,7 +378,6 @@ class AdaptingAgent(Agent):
     def reset_opponent_level(self):
         self.opponent_level = tf.constant(-1.)
 
-    #@tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action, in this case, that makes the future reward closed to 0
@@ -389,8 +389,7 @@ class AdaptingAgent(Agent):
         # choose action that makes future game_balance closest to zero
         return tf.argmin(tf.math.abs(probs),axis=-1)
     
-    #@tf.function(reduce_retracing=True)
-    def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
+    def select_action(self, observations, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
         """ 
         selects the currently best action using the model 
         
@@ -414,18 +413,10 @@ class AdaptingAgent(Agent):
         
         # remove all unavailable actions
         if not unavailable and available_actions_bool != None:
-            probs = tf.where(available_actions_bool, probs,-tf.reduce_max(tf.abs(probs))*200 +1)
+            probs = tf.where(available_actions_bool, probs,-tf.reduce_max(tf.abs(probs))*tf.constant(200.) +tf.constant(1.))
 
         # calculate best action
         return self.action_choice(probs)
-        """ loads models using model_path on index i"""
-
-        try:
-            self.model.load_weights(f"{self.model_path}/model/{i}")
-            self.target_model.load_weights(f"{self.model_path}/target_model/{i}")
-        except: # seems you are not in the right folder when executing
-            self.model.load_weights(f"../{self.model_path}/model/{i}")
-            self.target_model.load_weights(f"../{self.model_path}/target_model/{i}")
     
 class AdaptingAgent2(AdaptingAgent): 
     """ calculated the action choice by scaling either positive or negative values with calculation_value """
@@ -434,7 +425,6 @@ class AdaptingAgent2(AdaptingAgent):
         super().__init__(best_agent,game_balance_max)
         self.calculation_value = calculation_value
 
-    #@tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action, in this case, that makes the future reward closed to 0, but scales the values depending on calculation value first
@@ -445,6 +435,9 @@ class AdaptingAgent2(AdaptingAgent):
             probs (tf.Tensor): (batch, model output size) the model output to choose an action from
             available_actions_bool (tf.Tensor): a mask showing which actions are available
         """
+        if self.calculation_value == 0:
+            raise ValueError("Calculation Value cannot be 0 for AdaptingAgent2")
+            
         # choose action that makes future game_balance closest to zero
         # scale positive values a little smaller so the propertion of loosing and winning is more balanced
         if self.calculation_value > 0:
@@ -460,7 +453,6 @@ class AdaptingAgent3(AdaptingAgent):
         super().__init__(best_agent,game_balance_max)
         self.calculation_value = calculation_value
 
-    #@tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action, in this case, that makes the future reward closed to calculation_value, but scales the values around -1 and 1 first
@@ -479,16 +471,14 @@ class AdaptingAgent3(AdaptingAgent):
 
         return adapting_action
     
-    #@tf.function(reduce_retracing=True)
-    def select_action(self, observations, available_actions, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
+    def select_action(self, observations, available_actions_bool = None, unavailable : bool = False, opponent_level = None, save_opponent_level = True, game_balance = None):
         """ 
         selects the currently best action using the model, lets action_choice remove the unavailable actions
         
         Parameters:
-            observations (array): (batch, 7, 7) using FourConnect (other env possible)
-            available_actions (list): containing all the available actions for each batch observation
-            available_actions_bool (list): containing for every index whether the action with this value is in available actions
-            unavailable (bool): whether the agent is allowed to choose unavailable actions
+            observations (tf.Tensor): (batch, 7, 7) using FourConnect (other env possible)
+            available_actions_bool (tf.Tensor): containing for every index whether the action with this value is in available actions
+            unavailable (tf.Tensor): whether the agent is allowed to choose unavailable actions
             opponent_level (tf.constant) float: the opponent level given by the agent (only used in AdaptingDQNAgent)
             save_opponent_level (bool): whether we want to save the new opponent level in the agent (only used in AdaptingDQNAgent)
             game_balance (tf.constant) float: the average reward of the last several games (only used in Adapting Agent)
@@ -514,7 +504,6 @@ class AdaptingAgent4(AdaptingAgent3):
         super().__init__(best_agent,tf.constant(0.3), game_balance_max)
         self.calculation_value = calculation_value
 
-    #@tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action, in this case, that makes the future reward closed to minus the game balance, but scales the values around -1 and 1 first
@@ -540,7 +529,6 @@ class AdaptingAgent5(AdaptingAgent3):
         super().__init__(best_agent,tf.constant(0.3), game_balance_max)
         self.calculation_value = calculation_value
 
-    #@tf.function(reduce_retracing=True)
     def action_choice(self, probs, available_actions_bool = None):
         """ 
         returns best action, in this case, that makes the future reward closed to minus the game balance, but scales the values around -1 and 1 first

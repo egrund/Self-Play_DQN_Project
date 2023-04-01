@@ -15,13 +15,13 @@ class MyCNNNormalizationLayer(tf.keras.layers.Layer):
         self.norm_layer = tf.keras.layers.BatchNormalization() if normalization else None
         self.activation = tf.keras.layers.Activation("relu")
 
-    #@tf.function
+    @tf.function(reduce_retracing=True)
     def call(self,x,training=None):
         """ forward propagation """
 
         x = self.conv_layer(x)
-        #if self.norm_layer != None:
-        x = self.norm_layer(x,training)
+        if self.norm_layer != None:
+            x = self.norm_layer(x,training)
         x = self.activation(x)
 
         return x
@@ -46,11 +46,11 @@ class MyCNNBlock(tf.keras.layers.Layer):
         self.dropout_layer = dropout_layer
         self.conv_layers =  [MyCNNNormalizationLayer(filters,normalization, reg, k) for k in layers]
         self.mode = mode
-        #switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
-        #self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
+        switch_mode = {"dense":tf.keras.layers.Concatenate(axis=-1), "res": tf.keras.layers.Add(),}
+        self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
         self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2) #if global_pool is not None else None)
 
-    #@tf.function#(reduce_retracing=True)
+    @tf.function(reduce_retracing=True)
     def call(self,inputs,training=None):
         """ forward propagation of this block """
         x = inputs
@@ -59,33 +59,14 @@ class MyCNNBlock(tf.keras.layers.Layer):
             if self.dropout_layer != None:
                 x = self.dropout_layer(x, training)
 
-        #if self.pool != None:
-        x = self.pool(x)
-        return x
-    
-class MyDenseBlock(tf.keras.layers.Layer):
-    """ a block of 2 dense layers """
-
-    def __init__(self, hidden_units : list = [64,64],hidden_activation = tf.nn.relu,output_units = None, output_activation = None):
-        super(MyDenseBlock, self).__init__()
-
-        self.dense1 = [tf.keras.layers.Dense(h, activation=hidden_activation) for h in hidden_units]
-        self.out = tf.keras.layers.Dense(output_units, activation=output_activation) if output_units!= None else None
-
-    @tf.function # this works
-    def call(self, inputs, training = None):
-        """ forward propagation of the ANN """
-        x = inputs
-        for layer in self.dense1:
-            x = layer(x)
-        if self.out != None:
-            x = self.out(x)
+        if self.pool != None:
+            x = self.pool(x)
         return x
 
 class MyCNN_RL(tf.keras.Model):
     """ an ANN created to train on the mnist dataset """
     
-    def __init__(self,conv_kernel : list = [3], filters : int = 128, hidden_units : list = [64],output_units : int = 10, 
+    def __init__(self,conv_kernel : list = [3], filters : int = 128, hidden_units : list = [64], output_units : int = 10, 
                  hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), 
                  loss = tf.keras.losses.CategoricalCrossentropy(), dropout_rate = 0.5, normalisation : bool = True, gamma : tf.constant = tf.constant(0.99)):
         """ Constructor 
@@ -109,7 +90,8 @@ class MyCNN_RL(tf.keras.Model):
         self.dropout_rate = dropout_rate
         self.dropout_layer = tf.keras.layers.Dropout(dropout_rate) if self.dropout_rate else None
         self.block = MyCNNBlock(layers = conv_kernel, filters = filters, global_pool=True, normalization = normalisation, dropout_layer = self.dropout_layer)
-        self.dense_block = MyDenseBlock(hidden_units, hidden_activation, output_units, output_activation)
+        self.dense_list = [tf.keras.layers.Dense(h, activation=hidden_activation) for h in hidden_units]
+        self.out = tf.keras.layers.Dense(output_units, activation=output_activation) if output_units!= None else None
 
         self.optimizer = optimizer
         self.loss = loss
@@ -123,17 +105,19 @@ class MyCNN_RL(tf.keras.Model):
         for m in self.metric:
             m.reset_states()
 
-    # @tf.function#(reduce_retracing=True) # does retracing
+    @tf.function(reduce_retracing=True) 
     def call(self, states, training = None, intermediate = False):
         """ forward propagation of the ANN """
         x = self.block(states, training = training)
         inter = x # save intermediate result if we want to output it
-        x = self.dense_block(x)
+        for layer in self.dense_list:
+            x = layer(x)
+        x = self.out(x)
         if intermediate:
             return x, inter
         return x
 
-    #@tf.function(reduce_retracing=True)
+    @tf.function(reduce_retracing=True)
     def train_step(self, inputs, agent):
         """ 
         one train step of the model
@@ -147,7 +131,6 @@ class MyCNN_RL(tf.keras.Model):
         with tf.GradientTape() as tape: 
             
             # calculate the target Q value, only if not done
-            # Qmax = tf.math.reduce_max(target_model(s_new),axis=1)
             # we do not want unavailable actions to be the best next action
             Qmax = agent.select_best_action_value(observations = s_new,available_actions_bool = a_action, unavailable = False)
 

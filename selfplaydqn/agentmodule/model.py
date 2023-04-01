@@ -36,7 +36,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
             layers (list) = how many Conv2D you want, and for each what kernel_size
             filters (int) = how many filters the Conv2D layers should have
             global_pool (boolean) = global average pooling at the end if True else MaxPooling2D
-            mode (str) = whether we want to implement a denseNet or a resNet
+            mode (str) = whether we want to implement a denseNet or a resNet (not implemented)
             normalization (bool) = whether we want to use BatchNormalization
             reg (tensorflow Regularizer) = the Regularizer to use
             dropout_layer (tf.keras.layers.Dropout): The dropout layer to use
@@ -50,7 +50,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
         #self.extra_layer = None if mode == None else switch_mode.get(mode,f"{mode} is not a valid mode for MyCNN. Choose from 'dense' or 'res'.")
         self.pool = tf.keras.layers.GlobalAvgPool2D() if global_pool else tf.keras.layers.MaxPooling2D(pool_size=2, strides=2) #if global_pool is not None else None)
 
-    # @tf.function#(reduce_retracing=True)
+    #@tf.function#(reduce_retracing=True)
     def call(self,inputs,training=None):
         """ forward propagation of this block """
         x = inputs
@@ -59,7 +59,7 @@ class MyCNNBlock(tf.keras.layers.Layer):
             if self.dropout_layer != None:
                 x = self.dropout_layer(x, training)
 
-        #if self.pool is not None:
+        #if self.pool != None:
         x = self.pool(x)
         return x
     
@@ -72,7 +72,7 @@ class MyDenseBlock(tf.keras.layers.Layer):
         self.dense1 = [tf.keras.layers.Dense(h, activation=hidden_activation) for h in hidden_units]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation) if output_units!= None else None
 
-    #@tf.function # this works
+    @tf.function # this works
     def call(self, inputs, training = None):
         """ forward propagation of the ANN """
         x = inputs
@@ -165,101 +165,5 @@ class MyCNN_RL(tf.keras.Model):
 
         # apply the gradient
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-
-        return{m.name : m.result() for m in self.metric}
-
-        
-class MyMLP_RL(tf.keras.Model):
-
-    def __init__(self,hidden_units : list = [64],output_units : int = 10, 
-                 hidden_activation = tf.nn.relu, output_activation = tf.nn.softmax, optimizer = tf.keras.optimizers.Adam(), 
-                 loss = tf.keras.losses.MeanSquaredError(), gamma : tf.constant = tf.constant(0.99)):
-        """ Constructor 
-        
-        Parameters: 
-            hidden_units (list) = list containing one element for each hidden layer and the values are the units of each layer 
-            output_units (int) = the number of wanted output units
-            hidden_activation (function)= the activation function for the hidden layers
-            output_activation (function)= the activation fuction for the output layer
-            optimizer (tf.keras.optimizers.Optimizer)= the optimizer to use for training
-            loss (tf.keras.losses.Loss)= the loss function to use for training
-            gamma (tf.constant) = the discount factor to use for future rewards
-        """
-
-        super(MyMLP_RL, self).__init__()
-        
-        self.concat_layer = tf.keras.layers.Concatenate(axis=-1)
-        self.dense_block1 = MyDenseBlock(hidden_units, hidden_activation, 1, hidden_activation)
-        self.dense_block2 = MyDenseBlock(hidden_units, hidden_activation, output_units, output_activation)
-
-        self.optimizer = optimizer
-        self.loss = loss
-        self.output_units = output_units
-        self.gamma = gamma
-
-        self.metric = [tf.keras.metrics.Mean(name="loss")]
-
-    def reset_metrics(self):
-        """ resets all the metrices that are observed during training and testing """
-        for m in self.metric:
-            m.reset_states()
-
-    #@tf.function(reduce_retracing=True)
-    def call(self, states, agent, opponent_level, game_balance, training = None):
-        """ forward propagation of the ANN """
-
-        # get values from best agent about the game
-        best_probs, inter = agent.best_target_model(states,training = training, intermediate = True)
-        action_choice_best = agent.best_agent.select_action(states,None,None,True)# basically max value, includes unavailable actions
-
-        return self.calculations(best_probs, inter, opponent_level, game_balance, action_choice_best, training)
-    
-    # @tf.function
-    def calculations(self, best_probs, inter, opponent_level, game_balance, action_choice_best, training = None,):
-        x = self.concat_layer((inter, opponent_level, game_balance))
-        new_opponent_level = self.dense_block1(x)
-
-        x = self.concat_layer((best_probs, inter, new_opponent_level, action_choice_best))
-        x = self.dense_block2(x)
-        return x, new_opponent_level
-
-    #@tf.function(reduce_retracing=True)
-    def train_step(self, inputs, agent, summary_writer = None, step = None):
-        """ 
-        one train step of the model
-
-        inputs (list): state, action, reward, new_state, done, available_actions (after the action), game_balance, opponent_level 
-        """
-
-        # s,a,r,s_new, done = inputs
-        s,a,r,s_new, done, a_action, game_balance, opponent_level = inputs
-
-        with tf.GradientTape() as tape: 
-            
-            # calculate the target Q value, only if not done
-            # we do not want unavailable actions to be the best next action
-            Qbest = agent.select_adapting_action_value(observations = s_new,available_actions_bool = a_action, opponent_level = opponent_level, game_balance = game_balance, unavailable = tf.constant(False))
-
-            # calculate q value of this state action pair
-            Qsa_estimated = tf.gather(self(s, training = True, agent = agent, opponent_level = opponent_level, game_balance = game_balance)[0],indices = tf.cast(a,tf.int32),axis=1,batch_dims=1)
-            
-            # calculate the future change in game_balance
-            new_game_balance = tf.add( game_balance, tf.divide(r, agent.max_balance_length))
-            target = new_game_balance * (done) + self.gamma*(Qbest)*(1-done)
-
-            losses = self.loss(Qsa_estimated, target)
-
-            self.metric[0].update_state(losses)
-
-        # get the gradients
-        gradients = tape.gradient(losses,self.trainable_variables)
-
-        # apply the gradient
-        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-
-        if summary_writer != None:
-            with summary_writer.as_default():
-                tf.summary.scalar('prediction', tf.reduce_mean(Qsa_estimated), step=step)
-                tf.summary.scalar('target', tf.reduce_mean(target), step=step)
 
         return{m.name : m.result() for m in self.metric}

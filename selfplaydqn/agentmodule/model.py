@@ -72,7 +72,7 @@ class MyDenseBlock(tf.keras.layers.Layer):
         self.dense1 = [tf.keras.layers.Dense(h, activation=hidden_activation) for h in hidden_units]
         self.out = tf.keras.layers.Dense(output_units, activation=output_activation) if output_units!= None else None
 
-    @tf.function # this works
+    #@tf.function # this works
     def call(self, inputs, training = None):
         """ forward propagation of the ANN """
         x = inputs
@@ -205,29 +205,19 @@ class MyMLP_RL(tf.keras.Model):
             m.reset_states()
 
     #@tf.function(reduce_retracing=True)
-    def call(self, states, available_actions_bool = None, training = None, agent = None, opponent_level = None, game_balance = None):
+    def call(self, states, agent, opponent_level, game_balance, training = None):
         """ forward propagation of the ANN """
 
-        if agent == None:
-            raise ValueError("agent cannot be None")
-        if opponent_level == None:
-            opponent_level = tf.expand_dims(tf.repeat(tf.constant(-1.,dtype=tf.float32),states.shape[0]), axis=-1) # -1 is basically no information, as the value given from the agent is limited by relu
-        if game_balance == None:
-            game_balance = tf.expand_dims(tf.repeat(tf.constant(0.,dtype=tf.float32),states.shape[0]), axis=-1)
-
         # get values from best agent about the game
-        best_probs, inter = agent.best_agent.target_model(states,training = training, intermediate = True)
-        if available_actions_bool != None:
-            action_choice_best = agent.best_agent.select_action(states,None,None,True)# basically max value, includes unavailable actions
-        else:
-            action_choice_best = tf.expand_dims(tf.repeat(tf.constant(0.,dtype=tf.float32),states.shape[0]),axis=-1)
+        best_probs, inter = agent.best_target_model(states,training = training, intermediate = True)
+        action_choice_best = agent.best_agent.select_action(states,None,None,True)# basically max value, includes unavailable actions
 
         return self.calculations(best_probs, inter, opponent_level, game_balance, action_choice_best, training)
     
-    @tf.function
+    # @tf.function
     def calculations(self, best_probs, inter, opponent_level, game_balance, action_choice_best, training = None,):
         x = self.concat_layer((inter, opponent_level, game_balance))
-        new_opponent_level = self.dense_block(x)
+        new_opponent_level = self.dense_block1(x)
 
         x = self.concat_layer((best_probs, inter, new_opponent_level, action_choice_best))
         x = self.dense_block2(x)

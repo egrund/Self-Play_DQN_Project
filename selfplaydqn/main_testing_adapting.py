@@ -8,8 +8,8 @@ from agentmodule.agent import DQNAgent
 
 # Choose which Agent to use from the following: all are possible
 # **************************
-from agentmodule.agent import DQNAgent, AdaptingAgent, AdaptingAgent2, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5, AdaptingDQNAgent
-AdaptingAgentToUse = AdaptingAgent5
+from agentmodule.agent import DQNAgent, AdaptingAgent, AdaptingAgent2, AdaptingAgent3, AdaptingAgent4, AdaptingAgent5
+AdaptingAgentToUse = AdaptingAgent
 # is c, or B or cp depending on which agent
 calculation_value = tf.constant(4.) # has to be a float
 GAME_BALANCE_MAX = 25
@@ -18,7 +18,7 @@ GAME_BALANCE_MAX = 25
 # *************************
 from envs.tiktaktoe_env import TikTakToeEnv 
 from envs.keras_gym_env import ConnectFourEnv
-GameEnv = ConnectFourEnv
+GameEnv = TikTakToeEnv
 
 # seeds
 if True:
@@ -53,17 +53,7 @@ if GameEnv == ConnectFourEnv:
 
 best_model_path = f"model/{config_name}/{time_string}/best1"
 
-# adapting Model architecture if adapting DQN agent
-if AdaptingAgentToUse == AdaptingDQNAgent:
-    HIDDEN_UNITS_ADAPTING = [64]
-    output_activation_adapting = None
-    config_name_adapting = "adapting_test_new"
-    time_string_adapting = "20230329-152817"
-    adapting_index = 0
-    adapting_model_path = f"model/{config_name_adapting}/{time_string_adapting}/adapting"
-
 # create agent
-#env = ConnectFourEnv()
 env = SelfPLayWrapper(GameEnv)
 best_agent =  DQNAgent(env,
         None, 
@@ -81,15 +71,6 @@ if AdaptingAgentToUse == DQNAgent:
     adapting = False
 elif AdaptingAgentToUse == AdaptingAgent:
     adapting_agent = AdaptingAgent(best_agent=best_agent, game_balance_max=GAME_BALANCE_MAX)
-elif AdaptingAgentToUse == AdaptingDQNAgent:
-    adapting_agent = AdaptingDQNAgent(best_agent=best_agent,
-                            env = env, 
-                            buffer = None,
-                            model_path=adapting_model_path,
-                            hidden_units=HIDDEN_UNITS_ADAPTING,
-                            output_activation=output_activation_adapting,
-                            game_balance_max=GAME_BALANCE_MAX)
-    adapting_agent.load_models(adapting_index)
 else:
     adapting_agent = AdaptingAgentToUse(best_agent=best_agent,
                                 calculation_value = calculation_value,
@@ -98,8 +79,8 @@ else:
 # Testing Hyperparameter
 #**************************
 TESTING_SIZE = GAME_BALANCE_MAX # change at game balance max
-TESTING_SAMPLING = 1 # how often to sample testing_size many games
-OPPONENT_SIZE = 1 # how many different epsilon values will be tested
+TESTING_SAMPLING = 10 # how often to sample testing_size many games
+OPPONENT_SIZE = 5 # how many different epsilon values will be tested
 
 rewards = testing_adapting_dif_epsilon_opponents(adapting_agent, 
                                                  GameEnv, 

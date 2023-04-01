@@ -341,8 +341,8 @@ class AdaptingAgent(Agent):
         self.best_agent.model.trainable = False
         self.best_agent.target_model.trainable = False
 
-        self.model = self.best_agent.model
-        self.target_model = self.best_agent.target_model
+        self.best_model = self.best_agent.model
+        self.best_target_model = self.best_agent.target_model
 
         self.game_balance = np.array([],dtype = np.float32)
         self.max_balance_length = tf.constant(game_balance_max, dtype=tf.float32)
@@ -407,7 +407,7 @@ class AdaptingAgent(Agent):
             the chosen best action for each batch element (tf.Tensor)
         """
         
-        probs = self.model(observations, training = False)
+        probs = self.best_model(observations, training = False)
 
         # add the following print if playing against the agent to get information about it's decision
         #print("Model results: \n", probs.numpy().reshape((3,3)))
@@ -428,7 +428,7 @@ class AdaptingDQNAgent(AdaptingAgent):
     """
 
     def __init__(self, best_agent : DQNAgent, env, buffer, batch : int , model_path, polyak_update = 0.9, inner_iterations = 10, 
-                 reward_function = lambda d,r:r,#lambda d,r: tf.where(r==0.0,tf.constant(1.0),tf.where(r==1.0,tf.constant(0.0), r)), 
+                 reward_function = lambda d,r:r,
                  hidden_units = [64], prioritized_experience_replay : bool = True, gamma : tf.constant = tf.constant(0.99), 
                  loss_function = tf.keras.losses.MeanSquaredError(), output_activation = None, game_balance_max : int = 500):
         
@@ -441,10 +441,9 @@ class AdaptingDQNAgent(AdaptingAgent):
                  loss = loss_function, gamma = gamma)
         
         # build models
-        #obs = tf.keras.layers.Input(shape=env.reset().shape)
-        obs = tf.expand_dims(env.reset(),axis=0)
-        self.model(obs, agent = self)
-        self.target_model(obs, agent = self)
+        obs = tf.keras.layers.Input(shape=env.reset().shape)
+        self.model(obs, agent = self,opponent_level = tf.expand_dims(self.opponent_level,axis=0), game_balance = tf.expand_dims(self.get_game_balance(),axis=0))
+        self.target_model(obs, agent = self,opponent_level = tf.expand_dims(self.opponent_level,axis=0), game_balance = tf.expand_dims(self.get_game_balance(),axis=0))
         self.target_model.set_weights(np.array(self.model.get_weights(),dtype = object))
 
         # save other variables as attributes
@@ -530,13 +529,13 @@ class AdaptingDQNAgent(AdaptingAgent):
         if game_balance == None:
             game_balance = tf.expand_dims(tf.repeat(self.get_game_balance(tensor = True),observations.shape[0]),axis=-1)
         
-        probs, new_opponent_level = self.model(observations, training = False, agent = self, opponent_level = opponent_level, game_balance = game_balance)
+        probs, new_opponent_level = self.model(observations, agent = self, opponent_level = opponent_level, game_balance = game_balance, training = False)
 
         if save_opponent_level:
             self.opponent_level = tf.reduce_mean(new_opponent_level)
 
         # add the following print if playing against the agent to get information about it's decision
-        #print("Model results: \n", probs.numpy().reshape((3,3)))
+        # print("Model results: \n", probs.numpy())
         
         # remove all unavailable actions
         if not unavailable and available_actions_bool != None:
@@ -562,10 +561,10 @@ class AdaptingDQNAgent(AdaptingAgent):
         """
         #if opponent_level == None: # this should not happen
             #opponent_level = tf.expand_dims(tf.repeat(self.opponent_level,observations.shape[0]),axis=-1)
-        probs, _ = self.target_model(observations, training = False, agent = self, opponent_level = opponent_level, game_balance = game_balance)
+        probs, _ = self.target_model(observations, agent = self, opponent_level = opponent_level, game_balance = game_balance, training = False)
 
         # add the following print if playing against the agent to get information about it's decision
-        #print("Model results: \n", probs.numpy().reshgame_balance
+        #print("Model results: \n", probs.numpy())
         # remove all unavailable actions
         if not unavailable:
             probs = tf.where(available_actions_bool, probs,tf.reduce_max(tf.abs(probs)) +1)
@@ -591,10 +590,10 @@ class AdaptingDQNAgent(AdaptingAgent):
         if game_balance == None:
             game_balance = tf.expand_dims(tf.repeat(self.get_game_balance(tensor = True),state.shape[0]),axis=-1)
 
-        old_Q = tf.gather(self.model(state,training=False,agent = self, opponent_level = opponent_level, game_balance = game_balance)[0],tf.cast(action,dtype=tf.int32),batch_dims=1)
+        old_Q = tf.gather(self.model(state,agent = self, opponent_level = opponent_level, game_balance = game_balance,training=False)[0],tf.cast(action,dtype=tf.int32),batch_dims=1)
 
         new_action = self.select_action(new_state, None, available_action_bool, unavailable = unavailable_actions_in, opponent_level = opponent_level, save_opponent_level = False, game_balance = game_balance)
-        new_Q = tf.gather(self.target_model(state, training = False, agent = self, opponent_level = opponent_level, game_balance = game_balance)[0], new_action, batch_dims = 1)
+        new_Q = tf.gather(self.target_model(state, agent = self, opponent_level = opponent_level, game_balance = game_balance, training = False)[0], new_action, batch_dims = 1)
 
         # if the game is done, we cannot do another move
         # especially if we did the winning action the newly received state is in the perspective of the opponent, as there is no next state for us, because the opponent does not do a move. 
@@ -699,7 +698,7 @@ class AdaptingAgent3(AdaptingAgent):
             the chosen best action for each batch element (tf.Tensor)
         """
         
-        probs = self.model(observations, training = False)
+        probs = self.best_model(observations, training = False)
 
         # add the following print if playing against the agent to get information about it's decision
         #print("Model results: \n", probs.numpy().reshape((3,3)))

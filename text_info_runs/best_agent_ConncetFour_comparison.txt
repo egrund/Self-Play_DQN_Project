@@ -1,0 +1,24 @@
+Best Agent ConnectFour_linear/20230330-174353/best1/;560testing:
+ reward -1.0: 6.21 percent
+ reward 0.0: 0.06 percent
+ reward 1.0: 93.73 percent
+Best Agent ConnectFour_linear/20230330-174353/best1/;720testing:
+ reward -1.0: 5.9799999999999995 percent
+ reward 0.0: 0.02 percent
+ reward 1.0: 94.0 percent
+Best Agent ConnectFour_linear/20230330-174353/best1/;860testing:
+ reward -1.0: 5.609999999999999 percent
+ reward 0.0: 0.12 percent
+ reward 1.0: 94.27 percent
+Best Agent agent_ConnectFour_tanh/20230328-094318/best1/;400testing:
+ reward -1.0: 0.47000000000000003 percent
+ reward 0.0: 0.01 percent
+ reward 1.0: 99.52 percent
+Best Agent agent_ConnectFour_tanh/20230328-094318/best1/;550testing:
+ reward -1.0: 0.88 percent
+ reward 0.0: 0.05 percent
+ reward 1.0: 99.07000000000001 percent
+Best Agent agent_ConnectFour_tanh/20230328-094318/best1/;900testing:
+ reward -1.0: 1.04 percent
+ reward 0.0: 0.19 percent
+ reward 1.0: 98.77 percent

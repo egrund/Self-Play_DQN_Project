@@ -1,8 +1,3 @@
-
-# Group:
-* [Eosandra Grund](https://github.com/egrund/): egrund@uni-osnabrueck.de
-* [Fabian Kirsch](https://github.com/Kirschberg32/): fkirsch@uni-osnabrueck.de
-
 # Self-Play_DQN_Project
 IANNWTF Project WS22/23
 
@@ -10,6 +5,9 @@ The project was created using Python 3.10.8. The package requirements can be fou
 
 We trained DQN agents to play TikTakToe and ConnectFour using self-play.
 
+# Group:
+* [Eosandra Grund](https://github.com/egrund/): egrund@uni-osnabrueck.de
+* [Fabian Kirsch](https://github.com/Kirschberg32/): fkirsch@uni-osnabrueck.de
 
 # Files: 
 

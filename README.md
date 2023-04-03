@@ -6,6 +6,20 @@ The project was created using Python 3.10.8. The package requirements can be fou
 We trained DQN agents to play TikTakToe and ConnectFour using self-play. And then used them as a base for an adapting agent that creates a more balanced game and hopefully a better playing experience. The adapting agents where created by changing the action decions formula in the method action_choice of Agent. 
 
 # Results: 
+As you can see in the following plots, our agents learned well. 
+
+ <div class="row">
+  <div class="column">
+    <img src="Plots/best_agents_plots/Loss_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in loss." style="width:100%">
+    Training progress of our best Tic-Tac-Toe agent in loss
+  </div>
+  <div class="column">
+    <img src="Plots/best_agents_plots/Reward_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in ratio of rewards." style="width:100%">
+    Training progress of our best Tic-Tac-Toe agent in ratio of rewards.
+  </div>
+</div> 
+
+
 
 # Files: 
 * [Dia](Dia): contains UML class diagrams for our code
@@ -21,7 +35,8 @@ We trained DQN agents to play TikTakToe and ConnectFour using self-play. And the
   * [agent_ConnectFour_tanh/20230328-094318](logs/agent_ConnectFour_tanh/20230328-094318): training Connect Four with tanh activation function (best performance for Connect Four) and epsilon = 0.995
   * [agent_linear_decay099/20230327-185908](logs/agent_linear_decay099/20230327-185908): training Tic-Tac-Toe with a linear activation function and epsilon = 0.99 (best performance for Tic-Tac-Toe)
   * [best_agent_tiktaktoe_0998/20230327-191103](logs/best_agent_tiktaktoe_0998/20230327-191103): training Tic-Tac-Toe with tanh activation function and epsilon = 0.998
-* [model](model): Saved best models of different runs, for a description have a look at the logs description
+* [model](model): Saved best models of different runs, for a description have a look at the logs description above
+* [Report](Report): contains the finished report which was part of the project
 * [selfplaydqn](selfplaydqn): Entails all Python files
   * [agentmodule](selfplaydqn/agentmodule)
     * [agent.py](selfplaydqn/agentmodule/__init__.py): contains all Agent subclasses and the Agent class

@@ -1,0 +1,45 @@
+Video Script max 5 minutes: 
+Summarize the major points, including at least an explanation
+of the topic, the methods used and some short insights into results and how
+the work went
+
+1. Introduction: why did we choose the topic
+
+Most of the time deep reinforcement learning is used to create agents that are supposed to perform as good as possible in games. 
+But when developing an AI opponent for a game, it would be very frustrating when the opponent wins every single time. Therefore they would have to be restricted somehow. 
+But most of the time this is fixed and does not change for different players. Therefore it can still be frustrating for one player, while being easy for another. 
+To fix this problem it is good to have an agent, that can dynamically adapt to your performance to give you the best playing experience. 
+We want to do that using a trained DQN as a base and changing the action decision formula. 
+
+2. Outline: What did we do (show important code) DQN
+
+First we trained the DQN playing Tic-Tac-Toe and one playing Connect Four. As we used self-play, we programmed a wrapper for the environemnts to return the right rewards for the agents and the opponents step.
+The agent uses a convolutional neural network which returns the Q-values. We also programmed a buffer and a sampling algorithm by ourselves. During training, the performance was evaluated by letting the agents play against a random agent. 
+
+3. Results: show important plots
+
+In the plots one can see, that the loss converged quickly, while the agent performed already very well quickly early on. We were able to train well performing agents for both games. 
+
+
+4. Simple Adapting Agents (show important code)
+
+The simple adapting agents were created by changing the action decision formula. for that we created Classes of adapting agents wich contain a trained best agent to get the Q-values from. 
+The new formulas we tried started with taking the action with the value closest to 0. As you can see in this code snipped (AdaptingAgent)
+The final but not perfect approach was to scale the actions in between -1 and 1. And then choosing the action most close to the negative of the average reward, which was scaled bigger before.
+then the agent should play better when it lost in the near past and worse when it won. (also show code here of AdaptingAgent5)
+
+5. Results
+
+The first approach worked very well for the very simple game Tic-Tac-Toe. here you can see the performance against agents with different epsilons on the x-achis. On the left is a normal agent and on the right is an agent using the first appraoch (AdaptingAgent). 
+For Tic-Tac-Toe the last approach was not very different. But the agent prefers to win or lose instead of playing draw a little bit. Even though draw is very common in Tic-Tac-Toe otherwise. 
+
+For Connect Four the first approach did not work so well as you can see now. These are the same plots as before just for Connect Four. 
+Here the last approach worked well better. Here the last approach is shown on the right side for Connect Four.
+
+6. Improvements: 
+To improve our approach one could test how it feels for a human player to play against these agents to know how good they are. 
+Or implement a method for the agent to distinguish between the average reward and the opponents level, as the average reward depends on the level of adaptation. 
+Which means that it should be 0 if the agent adapts well. So the agent should not change its adapting strength if the level is 0. So it has to remember how much it adapted in the past. 
+
+7. How the work went: 
+The work went well, even though it was a challenge to make the DQN work. Sadly the time was a little tight so we struggled at the end and could not implement and analyse everything we wanted. 

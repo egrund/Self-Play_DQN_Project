@@ -20,9 +20,9 @@ The adapting agents worked well, but not perfect yet. The following is a plot of
 <img src="Plots/tiktaktoe_testing/AdaptingAgent_testing.png" alt="Testing AdaptingAgent against different opponents" style="width:70%">
 
 ## Files: 
-* [Dia](Dia): contains UML class diagrams for our code
 * [Plots](Plots): Folder with different Plots from runs and tests
   * [best_agents_plots](Plots/best_agents_plots): contains plots from loss and ratio of rewards from the testing during training
+  * [class_diagrams](Plots/class_diagrams): contains UML class diagrams for our code
   * [connectfour_testing](Plots/connectfour_testing): contains plots form testing DQNAgent and Adapting agents against different strong opponents for Connect Four
   * [tiktaktoe_testing](Plots/tiktaktoe_testing):contains plots form testing DQNAgent and Adapting agents against different strong opponents for Tic-Tac-Toe
 * [Video](Video): contains the script, the slides and the presentation video

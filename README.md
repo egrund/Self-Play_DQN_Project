@@ -10,11 +10,11 @@ As you can see in the following plots, our agents learned well.
 
  <div class="row">
   <div class="column">
-    <img src="Plots/best_agents_plots/Loss_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in loss." style="width:50%">
+    <img src="Plots/best_agents_plots/Loss_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in loss." style="width:40%">
     Training progress of our best Tic-Tac-Toe agent in loss
   </div>
   <div class="column">
-    <img src="Plots/best_agents_plots/Reward_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in ratio of rewards." style="width:50%">
+    <img src="Plots/best_agents_plots/Reward_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in ratio of rewards." style="width:40%">
     Training progress of our best Tic-Tac-Toe agent in ratio of rewards.
   </div>
 </div> 

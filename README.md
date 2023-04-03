@@ -1,11 +1,11 @@
 # Self-Play_DQN_Project
-IANNWTF Project WS22/23
- [Eosandra Grund](https://github.com/egrund/) and [Fabian Kirsch](https://github.com/Kirschberg32/)
+IANNWTF Project WS22/23 <br/>
+ [Eosandra Grund](https://github.com/egrund/) and [Fabian Kirsch](https://github.com/Kirschberg32/)<br/><br/>
 The project was created using Python 3.10.8. The package requirements can be found in [requirements.txt](requirements.txt). It is our final project for the course 'Implementing Artificial Neural Networks in Tensorflow' given in the winter semester 22/23 at Osnabrück University. 
 
 We trained DQN agents to play Tic-Tac-Toe and Connect Four using self-play. And then used them as a base for an adapting agent that creates a more balanced game and hopefully a better playing experience. The adapting agents where created by changing the action decions formula in the method action_choice of Agent. 
 
-# Results: 
+## Results: 
 As you can see in the following plots, our agents learned well. 
 
 Training progress of our best Tic-Tac-Toe agent in loss
@@ -19,7 +19,7 @@ The plots for Connect Four can be found in [here](Plots/best_agents_plots/).
 The adapting agents worked well, but not perfect yet. The following is a plot of one method for Tic-Tac-Toe. On the x-axis are different strong opponents from strong to weak and on the y-axis is the percentage for every reward. 
 <img src="Plots/tiktaktoe_testing/AdaptingAgent_testing.png" alt="Testing AdaptingAgent against different opponents" style="width:70%">
 
-# Files: 
+## Files: 
 * [Dia](Dia): contains UML class diagrams for our code
 * [Plots](Plots): Folder with different Plots from runs and tests
   * [best_agents_plots](Plots/best_agents_plots): contains plots from loss and ratio of rewards from the testing during training

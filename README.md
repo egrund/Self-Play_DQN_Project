@@ -8,11 +8,11 @@ We trained DQN agents to play Tic-Tac-Toe and Connect Four using self-play. And 
 ## Results: 
 As you can see in the following plots, our agents learned well. 
 
-Training progress of our best Tic-Tac-Toe agent in loss
-<img src="Plots/best_agents_plots/Loss_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in loss." style="width:70%">
+Training progress of our best Tic-Tac-Toe agent in loss<br/>
+<img src="Plots/best_agents_plots/Loss_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in loss." style="width:70%"><br/>
 
-Training progress of our best Tic-Tac-Toe agent in ratio of rewards. The red line shows which agent we chose as the best one. 
-<img src="Plots/best_agents_plots/Reward_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in ratio of rewards." style="width:70%">
+Training progress of our best Tic-Tac-Toe agent in ratio of rewards. The red line shows which agent we chose as the best one. <br/>
+<img src="Plots/best_agents_plots/Reward_best_tiktaktoe.png" alt="Training progress of our best Tic-Tac-Toe agent in ratio of rewards." style="width:70%"><br/>
 
 The plots for Connect Four can be found in [here](Plots/best_agents_plots/). 
 

@@ -1,20 +1,19 @@
 # Self-Play_DQN_Project
 IANNWTF Project WS22/23
-
+ [Eosandra Grund](https://github.com/egrund/) and [Fabian Kirsch](https://github.com/Kirschberg32/)
 The project was created using Python 3.10.8. The package requirements can be found in [requirements.txt](requirements.txt). It is our final project for the course 'Implementing Artificial Neural Networks in Tensorflow' given in the winter semester 22/23 at Osnabrück University. 
 
-We trained DQN agents to play TikTakToe and ConnectFour using self-play.
+We trained DQN agents to play TikTakToe and ConnectFour using self-play. And then used them as a base for an adapting agent that creates a more balanced game and hopefully a better playing experience. The adapting agents where created by changing the action decions formula in the method action_choice of Agent. 
 
-# Group:
-* [Eosandra Grund](https://github.com/egrund/): egrund@uni-osnabrueck.de
-* [Fabian Kirsch](https://github.com/Kirschberg32/): fkirsch@uni-osnabrueck.de
+# Results: 
 
 # Files: 
-
+* [Dia](Dia): contains UML class diagrams for our code
 * [Plots](Plots): Folder with different Plots from runs and tests
   * [best_agents_plots](Plots/best_agents_plots): contains plots from loss and ratio of rewards from the testing during training
   * [connectfour_testing](Plots/connectfour_testing): contains plots form testing DQNAgent and Adapting agents against different strong opponents for Connect Four
   * [tiktaktoe_testing](Plots/tiktaktoe_testing):contains plots form testing DQNAgent and Adapting agents against different strong opponents for Tic-Tac-Toe
+* [Video](Video): contains the script, the slides and the presentation video
 * [logs](logs): Log-Files created during the runs
   * [3agents_linear/20230328-212250](logs/3agents_linear/20230328-212250): training 3 agents to play tic-tac-toe using epsilon = 0.995
   * [AgentTanH/20230327-192241](logs/AgentTanH/20230327-192241): training Tic-Tac-Toe with linear activation function using epsilon = 0.998
@@ -23,12 +22,6 @@ We trained DQN agents to play TikTakToe and ConnectFour using self-play.
   * [agent_linear_decay099/20230327-185908](logs/agent_linear_decay099/20230327-185908): training Tic-Tac-Toe with a linear activation function and epsilon = 0.99 (best performance for Tic-Tac-Toe)
   * [best_agent_tiktaktoe_0998/20230327-191103](logs/best_agent_tiktaktoe_0998/20230327-191103): training Tic-Tac-Toe with tanh activation function and epsilon = 0.998
 * [model](model): Saved best models of different runs, for a description have a look at the logs description
-  * [3agents_linear/20230328-212250](model/3agents_linear/20230328-212250)
-  * [AgentTanH/20230327-192241](model/AgentTanH/20230327-192241)
-  * [ConnectFour_linear/20230330-174353/](model/ConnectFour_linear/20230330-174353)
-  * [agent_ConnectFour_tanh/20230328-094318](model/agent_ConnectFour_tanh/20230328-094318)
-  * [agent_linear_decay099/20230327-185908](model/agent_linear_decay099/20230327-185908)
-  * [best_agent_tiktaktoe_0998/20230327-191103](model/best_agent_tiktaktoe_0998/20230327-191103)
 * [selfplaydqn](selfplaydqn): Entails all Python files
   * [agentmodule](selfplaydqn/agentmodule)
     * [agent.py](selfplaydqn/agentmodule/__init__.py): contains all Agent subclasses and the Agent class

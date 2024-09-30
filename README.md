@@ -1,6 +1,6 @@
 # Self-Play_DQN_Project
 IANNWTF Project WS22/23 <br/>
- [Eosandra Grund](https://github.com/egrund/) and [Fabian Kirsch](https://github.com/Kirschberg32/)<br/><br/>
+ [Eosandra Grund](https://github.com/egrund/) and [Hanna Kirsch](https://github.com/Kirschberg32/)<br/><br/>
 The project was created using Python 3.10.8. The package requirements can be found in [requirements.txt](requirements.txt). It is our final project for the course 'Implementing Artificial Neural Networks in Tensorflow' given in the winter semester 22/23 at Osnabrück University. 
 
 We trained DQN agents to play Tic-Tac-Toe and Connect Four using self-play. And then used them as a base for an adapting agent that creates a more balanced game and hopefully a better playing experience. The adapting agents where created by changing the action decions formula in the method action_choice of Agent. 
